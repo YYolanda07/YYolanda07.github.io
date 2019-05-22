@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Tan&#39;s Blog</title>
+  
+  <subtitle>Tan&#39;s Blog</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://yoursite.com/"/>
+  <updated>2019-05-22T11:34:21.762Z</updated>
+  <id>http://yoursite.com/</id>
+  
+  <author>
+    <name>Tan</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>CSAPP Y86-64的流水线实现</title>
+    <link href="http://yoursite.com/2019/05/22/CSAPP-Y86-64%E7%9A%84%E6%B5%81%E6%B0%B4%E7%BA%BF%E5%AE%9E%E7%8E%B0/"/>
+    <id>http://yoursite.com/2019/05/22/CSAPP-Y86-64的流水线实现/</id>
+    <published>2019-05-22T09:38:02.000Z</published>
+    <updated>2019-05-22T11:34:21.762Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="流水线的概述"><a href="#流水线的概述" class="headerlink" title="流水线的概述"></a>流水线的概述</h2><p>简单来说流水线这个概念出现在我们日常生活中，比如餐厅的服务线和自动汽车清洗线都是应用于这个原理。流水线化的一个重要特性就是提高了系统的吞吐量，不过它也会轻微地增加延迟。</p><h2 id="流水线的局限性"><a href="#流水线的局限性" class="headerlink" title="流水线的局限性"></a>流水线的局限性</h2><p>1、不一致的划分<br>之前的是一个理想的流水线化的系统，每个阶段需要的时间都相同。而实际系统通过各阶段的延迟一般是不同的。且运行时钟的速率是由最慢阶段的延迟限制的。<br>2、流水线过深，收益反而下降<br>例如，我们把计算分成6个阶段，每个阶段需要50ps。在每对阶段之间插入流水线寄存器就得到了一个六阶段流水线。这个系统的最小时钟周期为50+20=70ps，吞吐量为14.29GIPS。性能比3阶段流水提高了14.29/8.33=1.71倍。由于通过流水线寄存器的延迟，吞吐量并没有加倍。这个延迟成了流水线吞吐量的一个制约因素。为了提高时钟频率，现代处理器采用了很深的流水线。</p><h2 id="流水线冒险"><a href="#流水线冒险" class="headerlink" title="流水线冒险"></a>流水线冒险</h2><p>使用流水线技术，当相邻指令间存在相关时会导致出现问题。这些相关有：<br>1、数据相关：下一条指令会用到这一条指令计算出的结果<br>2、控制相关：一条指令要确定下一条指令的位置，例如在执行跳转、调用或返回指令时。<br>这些相关可能会导致流水线产生计算错误，称为冒险。</p><h3 id="用暂停来避免数据冒险"><a href="#用暂停来避免数据冒险" class="headerlink" title="用暂停来避免数据冒险"></a>用暂停来避免数据冒险</h3><p>暂停是避免冒险的一种常用技术。让一条指令停顿在译码阶段，直到产生它的源操作数的指令通过了写回阶段，这样我们的处理器就能避免数据冒险。<br>暂停技术就是让一组指令阻塞在它们所处的阶段，而允许其他指令继续通过流水线。</p><h3 id="用转发来避免数据冒险"><a href="#用转发来避免数据冒险" class="headerlink" title="用转发来避免数据冒险"></a>用转发来避免数据冒险</h3><p>在译码阶段从寄存器文件中读入源操作数，但是对这些源寄存器的写有可能要在写回阶段才能进行。与其暂停直到写完成，不如简单地将要写的值传到流水线寄存器E作为源操作数。<br>（即，我们不必等到irmovl $10, %edx和irmovl $3, %eax 完成对寄存器的写更新之后再继续addl，而是在addl译码阶段发现需要%edx、%eax值，译码逻辑不从寄存器文件中去读，而是用前面阶段未写入寄存器的值。）这种将结果直接从一个流水线阶段传到较早阶段的技术称为数据转发。在周期4中，译码阶段逻辑发现有在访存阶段中对寄存器%edx未进行的写，还发现在执行阶段中正在计算寄存器%eax的新值。它用这些值，而不是从寄存器文件中读出的值，作为valA和valB的值。</p><h3 id="加载-使用数据冒险"><a href="#加载-使用数据冒险" class="headerlink" title="加载/使用数据冒险"></a>加载/使用数据冒险</h3><p>有一类数据冒险不能单纯用转发来解决，因为存储器读(访存阶段)在流水线发生的比较晚。<br>我们可以将暂停和转发结合起来，避免加载/使用数据冒险。（既然是来不及发送给后面的指令，那就让后面的指令暂停几个周期，再发送）<br>当mrmovl指令通过执行阶段时，流水线控制逻辑发现译码阶段中的指令(addl)需要从存储器中读出的结果。它会将译码阶段中的addl指令暂停一个周期，导致执行阶段中插入一个气泡。 mrmovl指令从存储器中读出的值可以从访存阶段转发到译码阶段中的addl指令。<br>这种用暂停来处理加载/使用冒险的方法称为加载互锁。加载互锁和转发技术结合起来足以处理所有可能类型的数据冒险。</p><h3 id="避免控制冒险"><a href="#避免控制冒险" class="headerlink" title="避免控制冒险"></a>避免控制冒险</h3><p>在处理器无法根据处于取址阶段的当前指令来确定下一条指令的地址时，就会出现控制冒险，一般来说控制冒险只会出现在ret和跳转指令上。当出现特殊情况时，通过暂停和往流水线中插入气泡的技术可以动态调整流水线的流程。</p><h2 id="分支预测"><a href="#分支预测" class="headerlink" title="分支预测"></a>分支预测</h2><p>流水线化设计的目的就是每个时钟周期都发射一条新指令，要做到这一点，我们必须在取出当前指令之后，马上确定下一条指令的位置。<br>但如果取出的指令是条件分支指令，要到几个周期后，也就是指令通过执行阶段之后，我们才能知道是否要选择分支。类似的，如果取出的指令是ret，要到指令通过访存阶段，才能确定返回地址。<br>对条件转移来说，我们既可以预测选择了分支，那么新PC值应为valC，也可以预测没有选择分支，那么新PC值应为valP。<br>对ret指令，可能的返回值几乎是无限的，因为返回地址位于栈顶的字，其内容可以是任意的。在设计中，我们不会试图对返回地址做任何预测。只是简单地暂停处理新指令，直到ret指令通过写回阶段。<br>无论哪种情况，我们都必须以某种方式来处理预测错误的情况，因为此时已经取出并部分执行了错误的指令。</p><h2 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h2><p>异常可以由程序执行从内部产生，也可以由某个外部信号从外部产生。简单的三种内部异常：<br>1、halt指令<br>2、非法指令<br>3、访问非法地址<br>在简化的ISA模型中，当处理器遇到异常时，会停止，设置适当的状态码，且应该是到异常指令之前的所有指令都已经完成，而其后的指令都不应该对程序员可见的状态产生任何影响。在一个更完整的设计中，处理器会继续调用异常处理程序，这是操作系统的一部分。<br>一般地，通过在流水线结构中加入异常处理逻辑，我们会在每个流水线寄存器中包括一个状态码Stat。如果一条指令在其处理器中于某个阶段产生了一个异常，这个状态字段就被设置成指示异常的种类。<br>异常状态和该指令的其他信息一起沿着流水线传播，直到它到达写回阶段。在此，流水线控制逻辑发现了异常，并停止执行。<br>异常事件不会对流水线中的指令流有任何影响，除了会禁止流水线中后面的指令更新程序员的可见状态，直到异常指令到达最后的流水线阶段。<br>因为指令到达写回阶段的顺序与它们在非流水化的处理器中执行的顺序相同，所以我们可以保证第一条遇到异常的指令会第一个到达写回阶段，此时程序执行会停止，流水线寄存器中的状态码会被记录为程序状态。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;流水线的概述&quot;&gt;&lt;a href=&quot;#流水线的概述&quot; class=&quot;headerlink&quot; title=&quot;流水线的概述&quot;&gt;&lt;/a&gt;流水线的概述&lt;/h2&gt;&lt;p&gt;简单来说流水线这个概念出现在我们日常生活中，比如餐厅的服务线和自动汽车清洗线都是应用于这个原理。流水线化的一
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CSAPP Y86-64顺序的实现</title>
+    <link href="http://yoursite.com/2019/05/20/CSAPP-Y86-64%E9%A1%BA%E5%BA%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/"/>
+    <id>http://yoursite.com/2019/05/20/CSAPP-Y86-64顺序的实现/</id>
+    <published>2019-05-20T12:48:06.000Z</published>
+    <updated>2019-05-22T11:07:16.858Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="Y86-64的顺序实现"><a href="#Y86-64的顺序实现" class="headerlink" title="Y86-64的顺序实现"></a>Y86-64的顺序实现</h2><h3 id="跟踪irmovq指令的执行"><a href="#跟踪irmovq指令的执行" class="headerlink" title="跟踪irmovq指令的执行"></a>跟踪irmovq指令的执行</h3><p>一条指令的执行过程通常可以分为取指-&gt;译码-&gt;执行-&gt;访存-&gt;写回-&gt;更新PC，下面以irmovq指令为例，详细的解释这条指令的执行过程。</p><table><thead><tr><th style="text-align:left">阶段</th><th style="text-align:left">通用</th><th style="text-align:left">具体</th></tr></thead><tbody><tr><td style="text-align:left"></td><td style="text-align:left">irmovq V,rB</td><td style="text-align:left">irmovq $128,%rsp</td></tr><tr><td style="text-align:left">取指</td><td style="text-align:left">icode:ifun&lt;-M1[PC]<br>rA:rB&lt;-M1[PC+1]<br>valC&lt;-M8[PC+2]<br>valP&lt;-PC+10</td><td style="text-align:left">M1[0x016]=3:0<br>M1[0x015]=f:4<br>valC&lt;-M1[0x018]=128<br>valP&lt;-0x020</td></tr><tr><td style="text-align:left">译码</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">执行</td><td style="text-align:left">valE&lt;-0+valC</td><td style="text-align:left">valE&lt;-128</td></tr><tr><td style="text-align:left">访存</td><td style="text-align:left"></td><td style="text-align:left"></td></tr><tr><td style="text-align:left">写回</td><td style="text-align:left">R[rB]&lt;-valE</td><td style="text-align:left">R[rB]&lt;-128</td></tr><tr><td style="text-align:left">更新PC</td><td style="text-align:left">PC&lt;-valP</td><td style="text-align:left">PC&lt;-0x20</td></tr></tbody></table><p>其余的还有其他指令，比如ret、popq、rmmovq，它们的执行过程其实也都是遵循通用规则的。</p><h3 id="SEQ的时序"><a href="#SEQ的时序" class="headerlink" title="SEQ的时序"></a>SEQ的时序</h3><p>要控制处理器中活动的时序，只需要寄存器和内存的时钟控制。通过时钟周期来控制元素的更新，通过组合逻辑来传播，每次时钟周期由低到高时，处理器开始执行一条新指令。处理器从来不需要为了完成一条指令的执行而去读该指令更新了的状态。</p><h3 id="SEQ阶段的实现"><a href="#SEQ阶段的实现" class="headerlink" title="SEQ阶段的实现"></a>SEQ阶段的实现</h3><p>一条指令在顺序的处理器中执行一般来说需要五个阶段，需要根据不同的指令取出其所需要的数据，可以使用HCL来描述这个过程。SEQ执行只有当上一个阶段执行完才会执行下一个阶段，这样就会导致运行的很慢，而且不能充分利用硬件单元，在接下来会学习流水线化的运行原理。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;Y86-64的顺序实现&quot;&gt;&lt;a href=&quot;#Y86-64的顺序实现&quot; class=&quot;headerlink&quot; title=&quot;Y86-64的顺序实现&quot;&gt;&lt;/a&gt;Y86-64的顺序实现&lt;/h2&gt;&lt;h3 id=&quot;跟踪irmovq指令的执行&quot;&gt;&lt;a href=&quot;#跟踪ir
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CSAPP逻辑设计</title>
+    <link href="http://yoursite.com/2019/05/18/CSAPP%E9%80%BB%E8%BE%91%E8%AE%BE%E8%AE%A1/"/>
+    <id>http://yoursite.com/2019/05/18/CSAPP逻辑设计/</id>
+    <published>2019-05-18T10:30:54.000Z</published>
+    <updated>2019-05-22T11:36:13.706Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="逻辑设计与HCL"><a href="#逻辑设计与HCL" class="headerlink" title="逻辑设计与HCL"></a>逻辑设计与HCL</h2><p>这部分内容应该是之前上过的一门课-数字电路设计与分析的精简版了吧，主要是讲各种逻辑电路的设计。</p><h3 id="逻辑门"><a href="#逻辑门" class="headerlink" title="逻辑门"></a>逻辑门</h3><p>基本的逻辑门类型有：AND、OR、NOT<br>逻辑门是活动的，输入变化输出就会变化。</p><h3 id="表达式"><a href="#表达式" class="headerlink" title="表达式"></a>表达式</h3><p><strong>1.单个位</strong><br>eq = (a &amp;&amp; b) || (!a &amp;&amp; !b) 这个表达式的结果分析，只有a 和 b 都为 0 或者都为 1 的时候，输出才为1。<br>(a &amp;&amp; s) || (b &amp;&amp; !s) 我们分析如果s为1，则结果为a，否则结果为b。<br><strong>2.多个位</strong><br>eq=(A==B) 这里A和B都是int型的，表达式是在判断64位字A和B中的每一位是否相同。</p><h3 id="HCL表达式-和-C-语言逻辑表达式的区别"><a href="#HCL表达式-和-C-语言逻辑表达式的区别" class="headerlink" title="HCL表达式 和 C 语言逻辑表达式的区别"></a>HCL表达式 和 C 语言逻辑表达式的区别</h3><p>1.逻辑门是持续输出的，如果电路的输入变化了，在一定的延迟之后，输出也会相应的变化，而C表达式是在执行到的时候才会求值。<br>2.两者操作的值不同，逻辑门只对值 0 和值 1 进行操作，而C 逻辑表达式允许参数是任意整数，0表示false，其它任意值都表示true。<br>3.逻辑表达式存在短路，比如对于a &amp;&amp; b这个符号来说，C语言中的规定是如果前者为假，则后者不会再计算。而HCL当中没有这种说法。</p><h3 id="存储器和时钟"><a href="#存储器和时钟" class="headerlink" title="存储器和时钟"></a>存储器和时钟</h3><p>组合电路是一直持续输出的，因此它无法保持一个状态不变。也就是说组合电路从本质上来讲，不存储任何信息。他们只是简单的响应输入信号，产生等于输入的某个函数的输出。但我们的计算机是需要存储数据的，因此就需要能保存状态的存储设备。存储设备是由一个时钟控制，时钟是一个周期型号，它控制着存储设备什么时候更新设备里的值。<br>常用的存储设备一般有两种：<br>时钟寄存器：简称寄存器，存储单个位或字。时钟信号控制寄存器加载输入值。<br>随机访问存储器：简称存储器，存储多个字，用地址来选择该读或者该写哪个字。</p><h2 id="Y86-64的顺序实现"><a href="#Y86-64的顺序实现" class="headerlink" title="Y86-64的顺序实现"></a>Y86-64的顺序实现</h2><p>处理一条指令包含很多操作，将它们组织成某个特殊的阶段序列。分为以下几个阶段：<br>取指：取指阶段从存储器读取指令字节，地址为程序计数器（PC）的值<br>译码：译码阶段从寄存器文件读入最多两个操作数,得到val A 和 / 或 val B<br>执行：执行阶段，算术/逻辑单元要么执行指令明确的操作（根据ifun的值），计算存储器引用的有效地址，要么增加或减少栈指针。得到的值为valE<br>访存：访存阶段可将数据写入存储器或从存储器读出数据<br>写回：最多可写两个结果到寄存器文件<br>更新PC：将PC设置成下一指令的地址</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;逻辑设计与HCL&quot;&gt;&lt;a href=&quot;#逻辑设计与HCL&quot; class=&quot;headerlink&quot; title=&quot;逻辑设计与HCL&quot;&gt;&lt;/a&gt;逻辑设计与HCL&lt;/h2&gt;&lt;p&gt;这部分内容应该是之前上过的一门课-数字电路设计与分析的精简版了吧，主要是讲各种逻辑电路的设计
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CSAPP浮点数操作</title>
+    <link href="http://yoursite.com/2019/05/17/CSAPP%E6%B5%AE%E7%82%B9%E6%95%B0%E6%93%8D%E4%BD%9C/"/>
+    <id>http://yoursite.com/2019/05/17/CSAPP浮点数操作/</id>
+    <published>2019-05-17T09:26:07.000Z</published>
+    <updated>2019-05-22T11:37:34.446Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="浮点代码"><a href="#浮点代码" class="headerlink" title="浮点代码"></a>浮点代码</h2><p>处理器的浮点体系结构包括多个方面，会影响对浮点数据操作的程序如何被映射到机器上，包括：<br>1） 如何存储和访问浮点数据。通常是通过某种寄存器方式来完成。<br>2） 对浮点数据操作的指令。<br>3） 想函数传递浮点数参数和从函数返回浮点数结构的规则。<br>4） 函数调用过程保持寄存器的规则——例如，一些寄存器被指定为调用者保存，而其他的被指定为被调用者保存。<br>AVX浮点体系结构允许数据存储在16个YMM寄存器中，它们的名字为%ymm0~%ymm15。每个YMM寄存器都是256位（32位）。</p><h3 id="浮点传送和转换操作"><a href="#浮点传送和转换操作" class="headerlink" title="浮点传送和转换操作"></a>浮点传送和转换操作</h3><p>浮点传送和转换操作指令汇总</p><table><thead><tr><th style="text-align:center">指令</th><th style="text-align:center">源1</th><th style="text-align:center">源2</th><th style="text-align:center">目的</th><th style="text-align:center">描述</th></tr></thead><tbody><tr><td style="text-align:center">vmovss</td><td style="text-align:center">M32</td><td style="text-align:center">NULL</td><td style="text-align:center">X</td><td style="text-align:center">传送单精度数</td></tr><tr><td style="text-align:center">vmovss</td><td style="text-align:center">X</td><td style="text-align:center">NULL</td><td style="text-align:center">M32</td><td style="text-align:center">传送单精度数</td></tr><tr><td style="text-align:center">vmovsd</td><td style="text-align:center">M64</td><td style="text-align:center">NULL</td><td style="text-align:center">X</td><td style="text-align:center">传送双精度数</td></tr><tr><td style="text-align:center">vmovsd</td><td style="text-align:center">X</td><td style="text-align:center">NULL</td><td style="text-align:center">M64</td><td style="text-align:center">传送双精度数</td></tr><tr><td style="text-align:center">vmovaps</td><td style="text-align:center">X</td><td style="text-align:center">NULL</td><td style="text-align:center">X</td><td style="text-align:center">传送对齐的封装好的单精度数</td></tr><tr><td style="text-align:center">vmovapd</td><td style="text-align:center">X</td><td style="text-align:center">NULL</td><td style="text-align:center">X</td><td style="text-align:center">传送对齐的封装好的双精度数</td></tr><tr><td style="text-align:center">vcvttss2si</td><td style="text-align:center">X/M32</td><td style="text-align:center">NULL</td><td style="text-align:center">R32</td><td style="text-align:center">用截断的方法把单精度数转换成整数</td></tr><tr><td style="text-align:center">vcvttsd2si</td><td style="text-align:center">X/M64</td><td style="text-align:center">NULL</td><td style="text-align:center">R32</td><td style="text-align:center">用截断的方法把双精度数转换成整数</td></tr><tr><td style="text-align:center">vcvttss2siq</td><td style="text-align:center">X/M32</td><td style="text-align:center">NULL</td><td style="text-align:center">R64</td><td style="text-align:center">用截断的方法把单精度数转换成四字整数</td></tr><tr><td style="text-align:center">vcvttsd2siq</td><td style="text-align:center">X/M64</td><td style="text-align:center">NULL</td><td style="text-align:center">R64</td><td style="text-align:center">用截断的方法把双精度数转换成四字整数</td></tr><tr><td style="text-align:center">vcvtsi2ss</td><td style="text-align:center">M32/R32</td><td style="text-align:center">X</td><td style="text-align:center">X</td><td style="text-align:center">把整数转换成单精度数</td></tr><tr><td style="text-align:center">vcvtsi2sd</td><td style="text-align:center">M32/R32</td><td style="text-align:center">X</td><td style="text-align:center">X</td><td style="text-align:center">把整数转换成双精度数</td></tr><tr><td style="text-align:center">vcvtsi2ssq</td><td style="text-align:center">M64/R64</td><td style="text-align:center">X</td><td style="text-align:center">X</td><td style="text-align:center">把四字整数转换成单精度数</td></tr><tr><td style="text-align:center">vcvtsi2sdq</td><td style="text-align:center">M64/R64</td><td style="text-align:center">X</td><td style="text-align:center">X</td><td style="text-align:center">把四字整数转换成双精度数</td></tr><tr><td style="text-align:center">vcvtps2pd</td><td style="text-align:center">X1</td><td style="text-align:center">NULL</td><td style="text-align:center">X2</td><td style="text-align:center">**把X1中两个低位单精度值扩展成X2中的两个双精度值</td></tr><tr><td style="text-align:center">vunpcklps</td><td style="text-align:center">X1</td><td style="text-align:center">X2</td><td style="text-align:center">X3</td><td style="text-align:center">交叉放置X1和X2的值存储到X3中</td></tr></tbody></table><h3 id="过程中的浮点代码"><a href="#过程中的浮点代码" class="headerlink" title="过程中的浮点代码"></a>过程中的浮点代码</h3><p>在x86-64中，XMM寄存器用来向函数传递浮点参数，以及从函数返回浮点值。<br>1） XMM寄存器%xmm0~%xmm7最多可以传递8个浮点参数（额外的可以通过栈传递）。<br>2） 函数使用寄存器xmm0来返回浮点值。<br>3） 所有的XMM寄存器都是调用者保存的。被调用者可以不用保存就覆盖这些寄存器中任一个。 </p><h3 id="浮点运算操作"><a href="#浮点运算操作" class="headerlink" title="浮点运算操作"></a>浮点运算操作</h3><p>浮点的运算符和整数的运算符大同小异，需要注意的是AVX浮点操作不能以立即数值作为操作数。</p><h2 id="Y86指令集体系结构"><a href="#Y86指令集体系结构" class="headerlink" title="Y86指令集体系结构"></a>Y86指令集体系结构</h2><h3 id="Y86指令"><a href="#Y86指令" class="headerlink" title="Y86指令"></a>Y86指令</h3><p>首先我们要知道的是Y86指令是不存在的，这是本书的作者受到 IA32指令，也就是“x86”的启发，所假想出来的一种处理器体系结构，与 “x86” 相比，Y86指令集的数据类型、指令和寻址方式都要少一些，字节级编码也比较简单。但是它仍然足够完整，能够写一些简单的处理证书的程序，而设计一个Y86处理器要求我们面对许多处理器设计者同样面临的问题。所以学习Y86处理器的设计是很有必要的。<br>定义一个指令集体系结构，会包括定义各种状态元素，指令集和它们的编码、一组编程规范和异常处理事件。</p><h3 id="指令编码"><a href="#指令编码" class="headerlink" title="指令编码"></a>指令编码</h3><p>Y86每条指令的第一个字节有唯一的代码和功能组合，给定这个字节，我们就可以决定所有其他附加字节的长度和含义。这个性质保证了处理器可以无二义性的执行目标程序代码。即使代码嵌入在程序的其它字节中，只要从序列的第一个字节开始处理，我们仍然可以很容易的确定指令序列。反过来，如果不知道一段代码序列的起始位置，我们就不能准确的确定怎样将序列划分为单独的指令。对于试图直接从目标代码字节序列中抽取出机器级程序的反汇编程序和其它一些工具来说，就带来了困难。</p><h3 id="关于RISC和CISC"><a href="#关于RISC和CISC" class="headerlink" title="关于RISC和CISC"></a>关于RISC和CISC</h3><p>两种不同的指令集，各有利弊，这个在之前的博客中也做过对比，想说明的一点是，人们应该考虑如何把两种指令集做结合，才能把处理器作用发挥的更好。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;浮点代码&quot;&gt;&lt;a href=&quot;#浮点代码&quot; class=&quot;headerlink&quot; title=&quot;浮点代码&quot;&gt;&lt;/a&gt;浮点代码&lt;/h2&gt;&lt;p&gt;处理器的浮点体系结构包括多个方面，会影响对浮点数据操作的程序如何被映射到机器上，包括：&lt;br&gt;1） 如何存储和访问浮点数据。
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CSAPP数据结构</title>
+    <link href="http://yoursite.com/2019/05/15/CSAPP%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/"/>
+    <id>http://yoursite.com/2019/05/15/CSAPP数据结构/</id>
+    <published>2019-05-15T08:37:54.000Z</published>
+    <updated>2019-05-22T11:38:47.559Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="计算机系统学习"><a href="#计算机系统学习" class="headerlink" title="计算机系统学习"></a>计算机系统学习</h2><h3 id="数组分配和访问"><a href="#数组分配和访问" class="headerlink" title="数组分配和访问"></a>数组分配和访问</h3><h4 id="数组的基本原则"><a href="#数组的基本原则" class="headerlink" title="数组的基本原则"></a>数组的基本原则</h4><p>数组是某种基本数据类型数据的集合，对于数据类型 T 和整型常数 N，数组的声明如下：</p><pre><code>T  A[N]</code></pre><p>上面的 A 称为数组名称。它有两个效果：<br>1.它在存储器中分配一个 L*N 字节的连续区域，这里 L 是数据类型 T 的大小（单位为字节）<br>2.A作为指向数组开头的指针，如果分配的连续区域的起始地址为xa，那么这个指针的值就是xa</p><h4 id="指针运算"><a href="#指针运算" class="headerlink" title="指针运算"></a>指针运算</h4><p>C语言允许对指针进行运算，而计算出来的值会根据该指针引用的数据类型的大小进行伸缩。也就是说，如果 P 是一个执行类型 T 的数据的指针，P 的值为 xp,那么表达式P+i 的值为 xp+L*i，这里 L 是数据类型T的大小。</p><h4 id="数组嵌套"><a href="#数组嵌套" class="headerlink" title="数组嵌套"></a>数组嵌套</h4><p>也就是数组的数组，比如二维数组 int A[5][3]。这个时候上面所讲的数组的分配和引用也是成立的。&amp;A[2][0]=xa+24</p><h4 id="定长数组和变长数组"><a href="#定长数组和变长数组" class="headerlink" title="定长数组和变长数组"></a>定长数组和变长数组</h4><p>如果在编译时数组的长度确定，我们就称为定长数组，反之则称为变长数组。<br>比如int A[10]，就是一个定长数组，它的长度为10，它的长度在编译时已经确定了，因为长度是一个常量。之前的C编译器不允许在声明数组时，将长度定义为一个变量，而只能是常量，不过当前的C/C++编译器已经开始支持动态数组，但是C++的编译器依然不支持方法参数。另外，C语言还提供了类似malloc和calloc这样的函数动态的分配内存空间，我们可以将返回结果强转为想要的数组类型。</p><h3 id="异质的数据结构"><a href="#异质的数据结构" class="headerlink" title="异质的数据结构"></a>异质的数据结构</h3><p>异质结构是指不同数据类型的数组组合，比如C语言当中的结构（struct）与联合（union）。在理解数组的基础上，这两种数据结构都非常好理解。</p><h4 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h4><p>考虑一个结构的声明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct &#123;</span><br><span class="line">    int a;</span><br><span class="line">    int b;</span><br><span class="line">    char c;</span><br><span class="line">&#125; A;</span><br></pre></td></tr></table></figure></p><p>这是一个非常简单的结构体，总共有12个字节，为什么是12个字节呢？这是因为数据对齐的原因。为了提高数据读取的速度，一般情况下会将数据以2的指数倍对齐，具体是2、4、8还是16，得根据具体的硬件设施以及操作系统来决定。<br>这样做的好处是，处理器可以统一的一次性读取4（也可能是其它数值）个字节，而不再需要针对特殊的数据类型读取做特殊处理。在这个例子来说，也就是说在读取a、b、c时，都可以统一的读取4个字节。特殊的，这里0-3的位置用于存储a，4-7的位置用于存储b，8的位置用于存储c，而9-11则用于填充，其中都是空的。</p><h4 id="联合"><a href="#联合" class="headerlink" title="联合"></a>联合</h4><p>与结构体不同的是，联合会复用内存空间，以节省内存，考虑一个联合的声明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">union &#123;</span><br><span class="line">    int a;</span><br><span class="line">    int b;</span><br><span class="line">    char c;</span><br><span class="line">&#125; B;</span><br></pre></td></tr></table></figure></p><p>这次总共会占4个字节，这是因为a、b、c会共用4个字节，这样做的目的是为了节省内存空间，显然它比结构体节省了8个字节的空间。它与结构体最大的区别就在于，对a、b、c赋值时，联合会覆盖掉之前的赋值，而结构体则不会，结构体可以同时保存a、b、c的值。</p><h3 id="在机器级程序中将控制与数据结合起来"><a href="#在机器级程序中将控制与数据结合起来" class="headerlink" title="在机器级程序中将控制与数据结合起来"></a>在机器级程序中将控制与数据结合起来</h3><h4 id="指针"><a href="#指针" class="headerlink" title="指针"></a>指针</h4><p>指针以一种统一方式，对不同数据结构中的元素产生引用。 </p><h4 id="GDB调试器的使用"><a href="#GDB调试器的使用" class="headerlink" title="GDB调试器的使用"></a>GDB调试器的使用</h4><p>GDB调试器是一种非常实用的辅助工具，可以更好地帮助我们通过阅读代码来推断程序的行为。具体的命令可以参考书上的表格。</p><h4 id="内存越界引用和缓冲区溢出"><a href="#内存越界引用和缓冲区溢出" class="headerlink" title="内存越界引用和缓冲区溢出"></a>内存越界引用和缓冲区溢出</h4><p>在栈中分配某个字符数组来保存字符串，但是字符串的长度超出了为数组分配的空间，这样就会引起缓冲器溢出。<br>缓冲区溢出的一个更加致命的使用就是让程序执行它本来不愿意执行的函数。这是一种最常见的通过计算机网络攻击系统安全的方法。</p><h4 id="对抗缓冲区溢出攻击"><a href="#对抗缓冲区溢出攻击" class="headerlink" title="对抗缓冲区溢出攻击"></a>对抗缓冲区溢出攻击</h4><p><strong>1.栈随机化</strong><br>为了在系统中插入攻击代码，攻击者既要插入代码，也要插入指向这段代码的指针，这个指针也是攻击字符串的一部分。产生这个指针需要知道这个字符串放置的栈地址。<br>栈随机化的思想使得栈的位置在程序每次运行时都有变化。这类技术称为地址空间布局随机化（Address-Space Layout Randomization)，简称ASLR。<br>通常攻击者使用”空操作雪橇（nop sled）“，使程序”滑过“目标序列，即在实际攻击代码前插入一段很长的nop(读作“no op”，no operation的缩写）指令。<br><strong>2.栈破坏检测</strong><br>计算机的第二道防线是能够检测到何时栈已经被破坏。<br>GCC提供一种栈保护者机制，来检测缓冲区越界。其思想是在栈帧中任何局部缓冲区与栈状态之间存储一个特殊的金丝雀（canary），也称为哨兵值（guard value），是在程序每次运行时随机产生的。<br><strong>3. 限制可执行代码区域</strong><br>最后一招是消除攻击者向系统插入可执行代码的能力。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;h3 id=&quot;数组分配和访问&quot;&gt;&lt;a href=&quot;#数组分配和访问&quot; class=&quot;headerlink
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CSAPP过程的实现</title>
+    <link href="http://yoursite.com/2019/05/13/CSAPP%E8%BF%87%E7%A8%8B%E7%9A%84%E5%AE%9E%E7%8E%B0/"/>
+    <id>http://yoursite.com/2019/05/13/CSAPP过程的实现/</id>
+    <published>2019-05-13T09:45:11.000Z</published>
+    <updated>2019-05-22T11:39:48.266Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="计算机系统学习"><a href="#计算机系统学习" class="headerlink" title="计算机系统学习"></a>计算机系统学习</h2><p>今天学习了过程的控制，过程是软件中的一种抽象，可以在程序中的某个地方调用某个过程来实现某种功能。</p><h3 id="栈帧的结构"><a href="#栈帧的结构" class="headerlink" title="栈帧的结构"></a>栈帧的结构</h3><p>栈帧在过程中必不可少，如果我们要想搞清楚过程的实现，就必须先知道栈帧的结构是如何构成的。栈帧其实可以认为是程序栈的一段，而程序栈又是存储器的一段，因此栈帧说到底还是存储器的一段。<br><img src="https://tva1.sinaimg.cn/large/007rAy9hgy1g2zu8mtlm2j30jn0dx3yq.jpg" alt><br>这幅图可以表示栈帧的结构，它由一系列栈帧构成，这些栈帧每一个都对应一个过程，而且每一个帧指针+4的位置都存储着函数的返回地址，每一个帧指针指向的存储器位置当中都备份着调用者的帧指针。</p><h3 id="过程的实现"><a href="#过程的实现" class="headerlink" title="过程的实现"></a>过程的实现</h3><p>总的来说，过程实现当中，参数传递以及局部变量内存的分配和释放都是通过栈帧来实现的，大部分情况下，我们认为过程调用当中做了以下几个操作。<br>1、备份原来的帧指针，调整当前的帧指针到栈指针的位置<br>2、建立起来的栈帧就是为被调用者准备的，当被调用者使用栈帧时，需要给临时变量分配预留内存<br>3、备份被调用者保存的寄存器当中的值，如果有值的话，备份的方式就是压入栈顶。<br>4、使用建立好的栈帧，比如读取和写入，一般使用mov，push以及pop指令等等。<br>5、恢复被调用者寄存器当中的值，这一过程其实是从栈帧中将备份的值再恢复到寄存器，不过此时这些值可能已经不在栈顶了。因此在恢复时，大多数会使用pop指令，但也并非一定如此。<br>6、释放被调用者的栈帧，释放就意味着将栈指针加大，而具体的做法一般是直接将栈指针指向帧指针。<br>7、恢复调用者的栈帧，恢复其实就是调整栈帧两端，使得当前栈帧的区域又回到了原始的位置。<br>8、弹出返回地址，跳出当前过程，继续执行调用者的代码。此时会将栈顶的返回地址弹出到PC，然后程序将按照弹出的返回地址继续执行。这个过程一般使用ret指令完成。<br>过程的实现大概就是以上八个步骤组成的，不过这些步骤并不都是必须的，有的时候，开启编译器的优化会优化掉很多步骤。</p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>过程在平时的程序中扮演着很重要的角色，基本上一些功能稍微复杂一点的程序都需要用到过程。过程可以帮助隐藏掉一些很复杂的实现步骤，甚至有一些过程可以直接提供API接口，只需要连接上接口就可以实现该过程的功能，同时这也在开发过程中帮助开发人员省了不少力气。通过本节的学习，我基本了解在汇编语言中，在调用过程时寄存器和程序内存会发生的变化，同时这也更好的帮助我理解寄存器的内部结构情况。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;p&gt;今天学习了过程的控制，过程是软件中的一种抽象，可以在程序中的某个地方调用某个过程来实现某种功能。&lt;/
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+</feed>
