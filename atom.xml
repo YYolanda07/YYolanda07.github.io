@@ -154,4 +154,291 @@
     
   </entry>
   
+  <entry>
+    <title>CSAPP汇编指令2</title>
+    <link href="http://yoursite.com/2019/05/12/CSAPP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B05-12/"/>
+    <id>http://yoursite.com/2019/05/12/CSAPP学习笔记5-12/</id>
+    <published>2019-05-12T08:45:56.000Z</published>
+    <updated>2019-05-19T04:51:16.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="计算机系统学习"><a href="#计算机系统学习" class="headerlink" title="计算机系统学习"></a>计算机系统学习</h2><h3 id="条件码寄存器"><a href="#条件码寄存器" class="headerlink" title="条件码寄存器"></a>条件码寄存器</h3><p>书中列出了四种常用的寄存器，它们的名字与作用分别如下所述。<br>CF：进位标志寄存器，它记录无符号操作的溢出，当溢出时会被设为1。<br>ZF：零标志寄存器，当计算结果为0时将会被设为1。<br>SF：符号标志寄存器，当计算结果为负数时会被设为1。<br>OF：溢出标志寄存器，当计算结果导致了补码溢出时，会被设为1。<br>从上面寄存器的简单说明可以看出，ZF和SF可以判断结果的符号，而CF和OF可以判断无符号和补码的溢出。而我们平时使用的高级程序语言，就仅仅靠这四个寄存器，就可以演化出千变万化的流程控制。<br>几乎所有的算术与逻辑指令都会改变条件码寄存器的值，不过改变的前提是触发了条件码寄存器的条件。比如对于subl %edx,%eax这个减法指令，假设%edx和%eax寄存器的值都为0x10，则两者相减的结果为0，此时ZF寄存器将会被自动设为1。对于其它的指令运算，都是类似的，会根据结果的不同而设置不同的条件码寄存器。</p><h3 id="访问条件码"><a href="#访问条件码" class="headerlink" title="访问条件码"></a>访问条件码</h3><p>对于普通寄存器来讲，使用的时候一般是直接读取它的值，而对于条件码寄存器来说，则不一定非要读取它的值才能使用。对于条件码寄存器来讲，有三种使用方式，都可以让它发挥作用。<br>1、可以根据条件码寄存器的某个组合，将一个字节设置为0或1，其实这个就相当于读值。<br>2、可以直接条件跳转到程序的某个其它的部分。<br>3、可以有条件的传送数据。<br>这里面第一种方式其实就是普通寄存器的用法，直接读取条件码寄存器的值，然后进行使用。对于第二和第三种来说，就不是这样了，它们不会显示的读取条件码寄存器的值，而是直接使用。<br>本节最难的地方，就在于如何将条件码寄存器的组合与条件联系起来。只要理解了这一点，那么条件码寄存器就算是基本掌握了。对于所有的组合都基于a-b这样的前提，也就是说条件码寄存器的值是经过了一个减运算设置后的值。例如，对于e-&gt;ZF这样的形式，代表的意思是字母e作为后缀时，则以ZF的值为1视为条件成立。</p><table><thead><tr><th style="text-align:center">组合</th><th style="text-align:center">功能</th></tr></thead><tbody><tr><td style="text-align:center">e-&gt;ZF</td><td style="text-align:center">相等</td></tr><tr><td style="text-align:center">ne-&gt;~ZF</td><td style="text-align:center">不相等</td></tr><tr><td style="text-align:center">s-&gt;SF</td><td style="text-align:center">负数</td></tr><tr><td style="text-align:center">ns-&gt;~SF</td><td style="text-align:center">非负数</td></tr><tr><td style="text-align:center">l-&gt;SF^OF</td><td style="text-align:center">有符号的小于</td></tr><tr><td style="text-align:center">le-&gt;(SF^OF)或ZF</td><td style="text-align:center">有符号的小于等于</td></tr><tr><td style="text-align:center">g-&gt;~(SF^OF)&amp;~ZF</td><td style="text-align:center">有符号的大于</td></tr><tr><td style="text-align:center">ge-&gt;~(SF^OF)</td><td style="text-align:center">有符号的大于等于</td></tr><tr><td style="text-align:center">b-&gt;CF</td><td style="text-align:center">无符号的小于</td></tr><tr><td style="text-align:center">be-&gt;CF或ZF</td><td style="text-align:center">无符号的小于等于</td></tr><tr><td style="text-align:center">a-&gt;~CF&amp;~ZF</td><td style="text-align:center">无符号的大于</td></tr><tr><td style="text-align:center">ae-&gt;~CF</td><td style="text-align:center">无符号的大于等于</td></tr></tbody></table><h3 id="跳转指令"><a href="#跳转指令" class="headerlink" title="跳转指令"></a>跳转指令</h3><p>这个指令是我们程序实现流程控制的关键指令，它可以直接将程序跳转到指定的位置，又或者根据条件码寄存器的组合进行条件跳转。总的来说，跳转指令的地址编码一般有两种，第一种是基于PC的，第二种则是绝对地址。基于PC（程序计数器）是指给出一个偏移量，这个偏移量基于当前下一条指令的地址，也就是PC当中的值，这是一种最常用的方式。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">3: eb 03         jmp 8 &lt;loop+0x8&gt;</span><br><span class="line">5: 48 d1 f8      sar %rax</span><br><span class="line">8：</span><br><span class="line">b: 7f f8         jg 5 &lt;loop+0x5&gt;</span><br><span class="line">d: f3 c3         repz retq</span><br></pre></td></tr></table></figure></p><p>对于3处字节编码的第二个字节为03，把它加上0x5，就是下一条指令的地址。而对于b处字节编码的第二个字节为f8，补码转换为10进制-8，加上0xd，得到0x5.<br>跳转指令一个最大的应用就是可以实现条件分支，一种是通过条件控制来实现，简单理解是先判断再执行；另一种是通过条件传送来实现，先执行再判断。这两种实现方式各有利弊，要根据实际的应用来判断使用哪一个更好。</p><h3 id="循环指令"><a href="#循环指令" class="headerlink" title="循环指令"></a>循环指令</h3><p>循环指令一般有三种do-while、while和for。<br><strong>do-while</strong><br>这个循环结构是先执行循环体的内容，然后再进行判断条件，成立继续循环，不成立就跳出。在汇编中可以使用cmp+label来模拟这个过程。<br><strong>while</strong><br>这个循环结构是先判断条件是否成立，然后才进入循环体。在汇编中一种是执行一个无条件跳转到循环结尾处，以此来执行初始的测试。另一种是先进行判断，然后就是do-while的过程。<br><strong>for</strong><br>for循环结构其实完全可以沿用while循环的方法，只需要把for的各个条件匹配到while中即可。</p><h3 id="switch语句"><a href="#switch语句" class="headerlink" title="switch语句"></a>switch语句</h3><p>我平时在程序中很少使用到switch分支语句，它适用于那种对变量进行很密集的判断，这个最好的应用大概就是分别指令集了吧。switch语句的实现很简单，可以用多重if-else来理解。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">    movl    8(%ebp), %eax//取a</span><br><span class="line">    cmpl    $10, %eax//比较a和10</span><br><span class="line">    je    .L10//如果a等于10，跳到.L10进行a=a+10的操作</span><br><span class="line">    cmpl    $20, %eax//比较a和20</span><br><span class="line">    je    .L11//如果a等于20，跳到.L11进行a=a+20的操作</span><br><span class="line">    jmp    .L14//如果a不等于10也不等于20，则跳到.L14进行a=a+30的操作</span><br><span class="line">.L10:</span><br><span class="line">    addl    $10, 8(%ebp)//a=a+10</span><br><span class="line">    jmp    .L12//break</span><br><span class="line">.L11:</span><br><span class="line">    addl    $20, 8(%ebp)//a=a+20</span><br><span class="line">    jmp    .L12//break</span><br><span class="line">.L14:</span><br><span class="line">    addl    $30, 8(%ebp)//a=a+30</span><br><span class="line">.L12:</span><br><span class="line">    movl    12(%ebp), %eax//取b</span><br><span class="line">    movl    8(%ebp), %edx//取a</span><br><span class="line">    leal    (%edx,%eax), %eax//计算a+b并作为返回值</span><br><span class="line">    /* switch语句实现 */</span><br></pre></td></tr></table></figure></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;h3 id=&quot;条件码寄存器&quot;&gt;&lt;a href=&quot;#条件码寄存器&quot; class=&quot;headerlink&quot; 
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CSAPP汇编指令1</title>
+    <link href="http://yoursite.com/2019/05/10/CSAPP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B05-9-5-10/"/>
+    <id>http://yoursite.com/2019/05/10/CSAPP学习笔记5-9-5-10/</id>
+    <published>2019-05-10T09:47:38.000Z</published>
+    <updated>2019-05-19T04:50:24.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="计算机系统学习"><a href="#计算机系统学习" class="headerlink" title="计算机系统学习"></a>计算机系统学习</h2><p>开始学习第三章程序的机器级表示，我竟然惊喜地发现这一章的内容正是我想学习但一直没找到汇总很好的学习资源。这两天主要在学习关于汇编指令的基础知识。</p><h3 id="为什么要学习汇编"><a href="#为什么要学习汇编" class="headerlink" title="为什么要学习汇编"></a>为什么要学习汇编</h3><p>有的人说，汇编语言的可读性和可移植性都很差，高级语言很容易理解、兼容性很好。为什么要学汇编语言而不是高级语言？<br>因为想要真正了解计算机系统，了解计算机是如何工作的，想要做一些漏洞分析，汇编语言都是必不可少的。</p><h3 id="生成汇编代码"><a href="#生成汇编代码" class="headerlink" title="生成汇编代码"></a>生成汇编代码</h3><p>一般生成汇编代码有两种途径，一种是从高级语言生成汇编代码，这时可以借助gcc编译器，比如在Linux环境下，使用命令</p><pre><code>&gt; gcc -Og -S xx.c</code></pre><p>就可以看到C语言编译器产生的汇编代码了；而另一种是对可执行程序反汇编生成汇编代码，在Linux上一般使用objdump工具，敲命令行</p><pre><code>&gt; objdump -d xx.o</code></pre><h3 id="汇编指令概述"><a href="#汇编指令概述" class="headerlink" title="汇编指令概述"></a>汇编指令概述</h3><p><strong>汇编代码格式</strong><br>汇编代码格式有两种，分别是是ATT和Intel格式，关于这两种汇编格式，在我之前的博客中做过总结。本书中用到的都是ATT格式的汇编代码。<br><strong>数据格式</strong><br><img src="https://tva1.sinaimg.cn/large/007rAy9hgy1g2we1z27mxj30hb073t9b.jpg" alt><br><strong>寄存器</strong><br>寄存器是CPU当中非常重要的对象，一般情况下，很多临时变量都会存储在这里.下面是一张书中的寄存器图示，它基于IA32架构给出。<br><img src="https://tva1.sinaimg.cn/large/007rAy9hgy1g2we40o0vzj30do0aodge.jpg" alt><br><strong>操作数指令符</strong><br>不同指令符的表示方式一共有三种，一种是$符号后跟一个标准C表示的整数，比如$100，$0x11等等。第二种则是寄存器，当它作为一个操作数的时候，则是取的寄存器当中的数值。另外，对于寄存器来说，也可以选择性的操作4个、2个、1个字节，而并不一定非要操作4个字节。最后一种，则是我们相对来说最熟悉的，就是存储器或者说内存。当它作为一个操作数的时候，会去计算存储器地址的数值，然后去这个地址取相应的数值。</p><h3 id="数据传送指令"><a href="#数据传送指令" class="headerlink" title="数据传送指令"></a>数据传送指令</h3><p>数据传送指令的目的是为了将一个数据从一个位置复制到另外一个位置。既然如此，那么数据传送指令就会包含一个源操作数和一个目的操作数，指令会将原操作数的值复制到目的操作数并覆盖。<br>数据传送指令一共可分为五种，分别是mov、movs、movz、push以及pop。这几种指令之前也分别做过总结，通过学习本节更系统地了解这些指令，算是复习了一遍吧。</p><h3 id="算术与逻辑运算操作指令"><a href="#算术与逻辑运算操作指令" class="headerlink" title="算术与逻辑运算操作指令"></a>算术与逻辑运算操作指令</h3><p>算术与逻辑运算包括很多种，比如最常见的加减乘除、与或非、左移右移等等。基本的加减乘除，位操作都比较基础了，这里就不再多说。通过本书我还学到了一个很精妙的指令，就是取地址运算符leaq。<br>leaq指令是非常神奇的一个指令，它可以取一个存储器操作数的地址，并且将其赋给目的操作数。如果用C语言当中来对应的话，它就相当于&amp;运算。<br>比如对于leaq 4(%rdx,%rdx,4),%rax这条指令来讲，我们假设%rdx寄存器的值为x的话，那么这条指令的作用就是将 4 + x + 4x = 5x + 4赋给%rax寄存器。它和mov指令的区别就在于，假设是movq 4(%rdx,%rdx,4),%rax这个指令，它的作用是将内存地址为5x+4的内存区域的值赋给%rax寄存器，而leaq指令只是将5x+4这个地址赋给目的操作数%rax而已，它并不对存储器进行引用的值的计算。<br>leaq指令能执行加法和有限形式的乘法，在编译一些比较复杂的算术表达式，使用leaq指令就会变得很简单，能有效减少程序的大小，提高代码执行效率。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;p&gt;开始学习第三章程序的机器级表示，我竟然惊喜地发现这一章的内容正是我想学习但一直没找到汇总很好的学习资
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CSAPP浮点数</title>
+    <link href="http://yoursite.com/2019/05/08/CSAPP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B05-8/"/>
+    <id>http://yoursite.com/2019/05/08/CSAPP学习笔记5-8/</id>
+    <published>2019-05-08T11:29:20.000Z</published>
+    <updated>2019-05-19T04:51:12.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="计算机系统学习"><a href="#计算机系统学习" class="headerlink" title="计算机系统学习"></a>计算机系统学习</h2><h3 id="浮点数"><a href="#浮点数" class="headerlink" title="浮点数"></a>浮点数</h3><p>为了让数值的表示更加精确，或者表示一些整数无法达到的数字，比如一些接近于0的数字，或者一些非常大的数值就需要用到浮点数了。浮点数对于计算机的意义，可以说是相当之大。<br>IEEE标准采用类似于科学计数法的方式表示浮点小数，即我们将每一个浮点数表示为 V = (-1)^s*M*2^E 。<br>这其中s为符号位，为0时为正，为1时为负。M为尾数，是一个二进制小数，它的范围是0至1-ε，或者1至2-ε（。E为阶码，是一个二进制整数，可正可负，为了给尾数加权。<br>浮点格式分为两种，一种是单精度，一种是双精度。单双精度分别对应于编程语言当中的float和double类型。其中float是单精度的，采用32位二进制表示，其中1位符号位，8位阶码以及23位尾数。double是双精度的，采用64位二进制表示，其中1位符号位，11位阶码以及52位尾数。<br>针对阶码E的值，浮点数的值可以分为三种不同的情况，分别是规格化的，非规格化的以及特殊值。我记得之前在上计算机组成原理课的时候，老师比较年轻生怕我们听不懂，就总让我提问，我曾经就提了一个关于规格化的问题，但具体是什么忘了，人上了岁数总容易忘事。所谓规格化就是E不为0也不为全1，当E为0时就是非规格化，特殊值就是无穷大或者不能表示的数。<br>计算浮点格式的数的值，过程比较简单，按照书上的过程直接算就行，这里就不再写了。</p><h3 id="浮点数的舍入"><a href="#浮点数的舍入" class="headerlink" title="浮点数的舍入"></a>浮点数的舍入</h3><p>针对浮点数来说，我们的舍入方式有四种方式，分别是向偶数舍入、向零舍入、向上舍入以及向下舍入。通常情况下我们采取的舍入规则是在原来的值是舍入值的中间值时，采取向偶数舍入，在二进制中，偶数我们认为是末尾为0的数。而倘若不是这种情况的话，则一般会有选择性的使用向上和向下舍入，但总是会向最接近的值舍入。其实这正是IEEE采取的默认的舍入方式，这种方式在进行数据统计的时候，更加科学一些，50%的概率嘛。</p><h3 id="浮点数的运算"><a href="#浮点数的运算" class="headerlink" title="浮点数的运算"></a>浮点数的运算</h3><p>浮点数的运算比较特殊，不支持加法的结合律，(3.14+1e10)-1e10!=3.14+(1e10-1e10)；也不支持乘法的结合律和分配律,(1e20*1e20)*1e-20!=1e20*(1e20*1e-20),1e20*(1e20-1e20)!=1e20*1e20 +1e20*1e20</p><h3 id="本章小结"><a href="#本章小结" class="headerlink" title="本章小结"></a>本章小结</h3><p>通过本章的学习，了解计算机中对数的表示，不同类型的数有不同的性质。在今后写程序中，也会注意不同类型的数在转换时，运算时的表达形式，尽量避免由于数的某些错误而导致整个程序意想不到的结果。</p><h2 id="今日总结"><a href="#今日总结" class="headerlink" title="今日总结"></a>今日总结</h2><p>今天在另一台电脑上重新搭静态博客，真是一把辛酸泪，碰到的问题很多，比如图床的问题，还有gitalk的一些问题。等我解决好这些问题，再进行个整理。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;h3 id=&quot;浮点数&quot;&gt;&lt;a href=&quot;#浮点数&quot; class=&quot;headerlink&quot; title=
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CSAPP整数的运算</title>
+    <link href="http://yoursite.com/2019/05/07/CSAPP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B05-7/"/>
+    <id>http://yoursite.com/2019/05/07/CSAPP学习笔记5-7/</id>
+    <published>2019-05-07T07:41:26.000Z</published>
+    <updated>2019-05-19T04:54:40.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="计算机系统学习"><a href="#计算机系统学习" class="headerlink" title="计算机系统学习"></a>计算机系统学习</h2><h3 id="整数的运算"><a href="#整数的运算" class="headerlink" title="整数的运算"></a>整数的运算</h3><p>平时的编程过程中，当进行整数运算时，经常会遇到一些奇怪的结果，比如两个正数加出负数，两个负数可以加出一个正数，这些都是由于数值表示的有限性导致的。<br><strong>无符号的加法</strong><br>二进制整数的加法与我们平时的十进制算法有一个最大的区别，那就是我们在计算机当中进行计算时，结果的位数都是有限制的。因此在我们计算过后，可能需要对结果进行截断操作。如果结果用超出规定的位才能表示，就算是溢出。所以来说无符号的加法只要不溢出就可以按照正常的加法来算，但如果出现溢出就需要减2^w。<br><strong>补码的加法</strong><br>对于补码加法就是可以先按照无符号加法进行运算，然后再进行无符号和有符号的转换。<br>与无符号加法不同的是，补码的加法会出现三种结果，一种是正常的结果，一种是正溢出，一种是负溢出。对于当正溢出的时候，我们的结果与无符号数类似，相加后的结果减去2^w。而当负溢出的时候，则刚好相反，相加后的结果加上2^w。<br><strong>补码的非</strong><br>先明白一个概念，对于任意一个w位的补码数t来说，它都有唯一的逆元t^-1，使得t + t^-1 = 0。<br>一个w位的补码数的范围在-2^(w-1）到2^(w-1)之间，直观的可以看出，对于不等于-2^(w-1)的补码数x来说，它的逆元就是-x。而对于-2^(w-1)来说，它的二进制位表示为1后面跟着w-1个0，我们需要找到一个数与其相加之后结果为0。这种时候我们需要考虑的是，如果是-x，也就是2^(w-1)，则它的位表示需要w+1位，是不存在的。因此我们需要考虑溢出的情况,负溢出的时候需要加上2^w，因此-2w-1的逆元就是-2^w + 2^(w-1) = -2^(w-1)，也就是它本身。<br><strong>无符号乘法</strong><br>无符号的乘法与加法类似，它的运算方式是比较简单的，只是也可能产生溢出。对于两个w位的无符号数来说，它们的乘积范围在0到(2^w-1)^2之间，因此可能需要2w位二进制才能表示。因此由于位数的限制，假设两个w位的无符号数的真实乘积为result，根据截断的规则，则实际得到的乘积为 result mod 2^w。<br><strong>补码乘法</strong><br>与加法运算类似，补码乘法也是建立在无符号的基础之上的，因此我们可以很容易的得到，对于两个w位的补码数来说，假设它们的真实乘积为result，则实际得到的乘积为 U2Tw(result mod 2^w)。<br><strong>乘以常数</strong><br>对于一个w位的二进制数来说，它与2^k的乘积，等同于这个二进制数左移k位，在低位补k个0。<br><strong>除以2的幂</strong><br>1.除以2的幂的无符号除法：对于一个w位的二进制数来说，它除以2^k，等同于这个二进制数右移k位，在高位补k个0。<br>2.除以2的幂的补码除法：对于一个w位的非负数的二进制数来说，它除以2^k，等同于这个二进制数右移k位，在高位补k个1；而对于一个w位的负数的二进制数来说，它除以2^k，要先加上2^k-1,然后再右移k位，在高位补k个1。</p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>计算机执行整数运算实际上是一种模运算形式，由于数字长度的限制，就会出现溢出的现象，这样就会导致程序运行错误，也会出现许多漏洞，比如在分配地址空间时，发生了正溢出，得到的结果比我们预想的小得多，这样就会导致分配的地址空间变小，而对这些空间进行某些操作时，会破坏超出这些地址空间的数据。</p><h2 id="地址传送指令"><a href="#地址传送指令" class="headerlink" title="地址传送指令"></a>地址传送指令</h2><table><thead><tr><th style="text-align:center">指令格式</th><th style="text-align:center">名称</th><th style="text-align:center">功能</th></tr></thead><tbody><tr><td style="text-align:center">lea r16,mem</td><td style="text-align:center">有效地址传送指令</td><td style="text-align:center">r16&lt;-mem的有效地址</td></tr><tr><td style="text-align:center">lds r16,mem</td><td style="text-align:center">指针传送指令</td><td style="text-align:center">r16&lt;-mem，DS&lt;-mem+2</td></tr><tr><td style="text-align:center">les r16,mem</td><td style="text-align:center">指针传送指令</td><td style="text-align:center">r16&lt;-mem,ES&lt;-mem+2</td></tr></tbody></table><p>LEA指令将存储器操作数mem的4位16进制偏移地址送到指定的寄存器。这里，源操作数必须是存储器操作数，目标操作数必须是16位通用寄存器。对于LEA指令来说变量其后面的有无[]皆可，都表示取变量地址，相当于指针；寄存器无[]表示取地址，有[]表示取值。<br>lds和les的操作过程差不多，r16是一个16位寄存器,mem是一个存储器操作数,为双字项,高16位送入DS/ES,低16位送入r16.</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;h3 id=&quot;整数的运算&quot;&gt;&lt;a href=&quot;#整数的运算&quot; class=&quot;headerlink&quot; ti
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CSAPP整数的拓展与截断</title>
+    <link href="http://yoursite.com/2019/05/06/CSAPP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B05-6/"/>
+    <id>http://yoursite.com/2019/05/06/CSAPP学习笔记5-6/</id>
+    <published>2019-05-06T08:56:38.000Z</published>
+    <updated>2019-05-19T04:53:52.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="计算机系统学习"><a href="#计算机系统学习" class="headerlink" title="计算机系统学习"></a>计算机系统学习</h2><p>今天学习了对二进制整数的位进行拓展和截断表示。</p><h3 id="拓展数字"><a href="#拓展数字" class="headerlink" title="拓展数字"></a>拓展数字</h3><p style="text-indent:2em">假如我们将一个短整型的变量转换为整型变量，由两个字节扩充为四个字节，这时就涉及到了位的扩展。</p><br><p style="text-indent:2em">在进行位的扩展时，最容易想到的就是在高位全部补0，也就是将原来的二进制序列前面加入若干个0，也称为零扩展。还有一种方式比较特别，是符号扩展，也就是针对有符号数的方式，它是直接扩展符号位，也就是将二进制序列的前面加入若干个最高位。</p><br><p style="text-indent:2em">对于零扩展来说，很明显扩展之后的值与原来的值是相等的，而对于符号扩展来说，则是一样，只不过没有零扩展来的直接。我们在计算补码时有一个比较简单的办法，就是符号位若为0，则与无符号是类似的。若符号位为1，也就是负数时，可以将其余位取反最终再加1即可。因此当我们对一个有符号的负数进行符号扩展时，前面加入若干个1，在取反之后都为0，因此依旧会保持原有的数值。</p><br><p style="text-indent:2em">总之，在对位进行扩展时，是不会改变原有数值的。</p><br><p style="text-indent:2em">在书中对于负数的符号扩展还给出了这一过程的证明，这个证明使用了数学归纳法，具体过程如下。</p><br><img src="https://tva1.sinaimg.cn/large/007rAy9hgy1g2rpns18k4j30gh08iglv.jpg" alt><br><p style="text-indent:2em">2的幂函数有一个特殊的属性，就是2^w-2^(w-1)=2^(w-1).因此加上一个权值为-2^w的位，和一个将权值为-2^(w-1)的位转为权值为2^(w-1)的位，这两项综合起来得到的结果是一样的。</p><h3 id="截断数字"><a href="#截断数字" class="headerlink" title="截断数字"></a>截断数字</h3><p></p><p style="text-indent:2em">截断与扩展相反，它是将一个多位二进制序列截断至较少的位数，也就是与扩展是相反的过程。</p><br>观察书中给的例子，我们可以发现截断可能会导致数据的失真。对于无符号编码来说，截断后就是剩余位数的无符号编码数值。在书中给出了这一简单过程的证明，它主要是想表明截断前与截断后的数值的关系是取余数所得到的。而对于有符号数来说，就是在截断无符号数的基础上加上一步，做一个无符号数转补码的操作。总的来说，无符号数的截断结果是<br><img src="https://tva1.sinaimg.cn/large/007rAy9hgy1g2rpzcjdebj30gi014jra.jpg" alt><br>而补码数字的截断结果是<br><img src="https://tva1.sinaimg.cn/large/007rAy9hgy1g2rq05yaqtj30gs01eq2v.jpg" alt><br>我在做习题2.24时卡了好久，自己做的结果和答案就是对不上，后来才发现题目要求将4位截断位3位，我一直以为是2位，做了半天好心酸。比如对于-1来说，二进制补码表示为1111，首先按截断的位数取余得到无符号数111，再将无符号数转为补码，按照昨天的公式得到7-8=-1.<p></p><h3 id="关于有无符号数转换的思考"><a href="#关于有无符号数转换的思考" class="headerlink" title="关于有无符号数转换的思考"></a>关于有无符号数转换的思考</h3><p>从上面的分析不难看出，具有有符号和无符号数的语言，在相互转换时可能会因此引起一些不必要的麻烦。而且无符号数除了能表示的最大值更大以外，似乎并没有太大的好处，因此有很多语言是不支持无符号数的。在Java语言中，就只有有符号数，这样省去了很多不必要的麻烦。<br>有符号数和无符号数在进行强制转换时可能会引起程序的错误，而当这种转换是隐式的时候，错误很难被发现，因而程序会得出莫名其妙的结果。很多函数也因为这种强制转换而存在漏洞，被有心人利用，比如getpeername函数，如果对一个补码的最小值按照无符号数来读，这样就会读出一个很大的数值，如果这个值代表一个地址，那么就可能会产生越界或者读到一些不被授权的信息。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;p&gt;今天学习了对二进制整数的位进行拓展和截断表示。&lt;/p&gt;
+&lt;h3 id=&quot;拓展数字&quot;&gt;&lt;a href=
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CSAPP整数的表示</title>
+    <link href="http://yoursite.com/2019/05/05/CSAPP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B05-5/"/>
+    <id>http://yoursite.com/2019/05/05/CSAPP学习笔记5-5/</id>
+    <published>2019-05-05T08:25:18.000Z</published>
+    <updated>2019-05-19T04:54:08.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="计算机系统学习"><a href="#计算机系统学习" class="headerlink" title="计算机系统学习"></a>计算机系统学习</h2><p>今天学习了整数的表示，一般编码整数有两种方式：一种只能表示非负数，而另一种能够表示负数、零和整数。这样就把整数分为无符号数unsigned和有符号数int(默认)，通过今天的学习初步掌握了几种编码类型和它们之间的转换。</p><h3 id="编码类型"><a href="#编码类型" class="headerlink" title="编码类型"></a>编码类型</h3><p><strong>无符号编码</strong><br>其实无符号编码就是我们平时最直接的读法，没有符号位，直接可以转换位十进制数。对于一个w位的二进制数来说，取值范围是[0,2^w-1]。<br><strong>补码</strong><br>无符号编码读起来直接自然，但是可惜的是，它无法表示负整数。因此我们需要一种能够表示负数的整数表示方式，这样就引出了补码编码。补码表示的二进制数，最高位是符号位，0为非负数，1为负数。补码的定义如下<br><img src="https://tva1.sinaimg.cn/large/007rAy9hly1g2qj6it8yfj30a901s0sk.jpg" alt><br>我们观察这个公式，不难看出，补码格式下，对于一个w位的二进制序列来说，当最高位为1，其余位全为0时，得到的就是补码格式的最小值，即TMinw = -2^w-1;而当最高位为0，其余位全为1时，得到的就是补码格式的最大值，即TMaxw = 2^(w-1)-1<br><strong>反码和原码</strong><br>有符号数还有两种表示方法：反码和原码<br>反码和补码的区别在于，除了最高有效位的权是-[2^(w-1)-1]而不是-2^(w-1)],它们没有别的区别。<br>而原码，最高有效位是符号位，仅用来确定正负，剩下的位是具体的数，按照我们平时的读法来读就可以。</p><h3 id="不同编码的转换"><a href="#不同编码的转换" class="headerlink" title="不同编码的转换"></a>不同编码的转换</h3><p>在C语言当中，我们经常会使用强制类型转换，而在之前的章节中，也学习过强制类型转换。强制类型转换不会改变二进制序列，但是会改变数据类型的大小以及解释方式，那么考虑相同整数类型的无符号编码和补码编码，数据类型的大小是没有任何变化的，变化的就是它们的解释方式。比如1001这个二进制序列，如果用无符号编码解释的话就是表示9，而若采用补码编码解释的话，则是表示-7。<br><strong>补码转无符号数</strong><br>通过分析书上的例子，总结出一条规律就是，假设补码表示的数为x，当x&lt;0时为x+2^w,当x&gt;=0为x。为什么会得出来这样的结果？主要是因为最高位是否为符号位而产生的差异。<br><strong>无符号数转补码</strong><br>无符号数转补码同样有规律，同样设无符号数为x，当x&lt;=TMaxw时，为x，当x&gt;TMaxw时，为x-2^w.得出这样的结果原因同上。<br>C语言中的有符号数和无符号数可以通过隐式转换或者显式转换的方式实现。</p><h2 id="堆栈操作指令"><a href="#堆栈操作指令" class="headerlink" title="堆栈操作指令"></a>堆栈操作指令</h2><table><thead><tr><th style="text-align:center">指令格式</th><th style="text-align:center">名称</th><th style="text-align:center">功能</th></tr></thead><tbody><tr><td style="text-align:center">push reg/mem/seg</td><td style="text-align:center">进栈指令</td><td style="text-align:center">SP&lt;-SP-2,[sp]&lt;-reg/mem/seg</td></tr><tr><td style="text-align:center">pop reg/mem/seg</td><td style="text-align:center">出栈指令</td><td style="text-align:center">reg/mem/seg&lt;-[sp],SP&lt;-SP+2</td></tr></tbody></table><h3 id="PUSH"><a href="#PUSH" class="headerlink" title="PUSH"></a>PUSH</h3><p>PUSH指令即先修改堆栈指针SP(压入时为自动减2),然后将指定的操作数送入新的栈顶位置。push的操作过程可以用下面的代码来表示。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">PUSH:</span><br><span class="line">R[$SP]= R[$SP]-2; </span><br><span class="line">badStack(R[$SP],R[$IP]);</span><br><span class="line">RAM[R[$SP]] = R[RAM[R[$IP]+1]];</span><br><span class="line">R[$IP]=R[$IP]+2;</span><br></pre></td></tr></table></figure></p><h3 id="POP"><a href="#POP" class="headerlink" title="POP"></a>POP</h3><p>POP指令和PUSH指令是相对而言的，POP指令是将堆栈段中当前SS:SP所指的字内容弹出到某个寄存器或段寄存器或内存单元，然后再修改堆栈指针SP，指向新的栈顶。POP的操作过程可以用下面的代码来表示。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">POP:</span><br><span class="line">R[RAM[R[$IP]+1]]=RAM[R[$SP]]);</span><br><span class="line">R[$SP]=R[$SP]+2;</span><br><span class="line">badStack(R[$SP],R[$IP]);</span><br><span class="line">R[$IP] = R[$IP]+2;</span><br></pre></td></tr></table></figure></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;p&gt;今天学习了整数的表示，一般编码整数有两种方式：一种只能表示非负数，而另一种能够表示负数、零和整数。这
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>304Challenge:代码分析5</title>
+    <link href="http://yoursite.com/2019/05/02/304Challenge-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%905/"/>
+    <id>http://yoursite.com/2019/05/02/304Challenge-代码分析5/</id>
+    <published>2019-05-02T11:38:35.000Z</published>
+    <updated>2019-05-02T13:09:56.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2><p>1.在汇编代码中，发现有很多[],[]表示是间接寻址，bx和[bx]的区别是，前者操作数就是bx中存放的数，后者操作数是以bx中存放的数为地址的单元中的数。<br>比如：mov ax,[bx]<br>bx中存放的数是40F6H，40F6H、40F7H两个单元中存放的数是22H、23H，则<br>mov ax,[bx]；2322H传送到ax中<br>mov ax,bx；40F6H传送到ax中</p><p>2.movzx指令一般用于将较小值拷贝到较大值中，其实就是将我们的源操作数取出来,然后置于目的操作数,目的操作数其余位用0填充。<br>比如eax=00304000h<br>若执行 movzx eax, ax后 eax = 00004000h.<br>若执行 movzx eax, ah后 eax = 00000040h.</p><p>3.SI（Source Index）：源变址寄存器可用来存放相对于DS段之源变址指针；<br>DI（Destination Index）：目的变址寄存器，可用来存放相对于 ES 段之目的变址指针。<br>ROL DEST，COUNT<br>把目的地址中的数据循环左移COUNT次，每次从最高位（最左）移出的数据位都补充到最低位（最右），最后从最高位（最左）移出的数据位保存到CF标志位。</p><p>4.寄存器<br>8086处理器中的寄存器分为8组，每组宽度为32位<br>通用寄存器、段寄存器、指令寄存器、标志寄存器、系统地址寄存器、控制寄存器、调试寄存器、测试寄存器<br>通用寄存器：<br>    EAX 累加器 在乘法和除法指令中被自动使用<br>    EBX 基址寄存器<br>    ECX 计数器 循环计数器<br>    EDX 数据寄存器<br>    ESI 源变址寄存器<br>    EDI 目的变址寄存器<br>    EBP 扩展基址指针寄存器 由高级语言用来引用函数参数和局部变量<br>    ESP 栈指针寄存器<br>EAX EBX ECX EDX ESI EDI EBP ESP #32位<br>AX BX CX DX SI DI BP SP #低16位<br>AH BH CH DH #高8位<br>AL BL CL DL #低8位</p><p>段寄存器：<br>   CS：代码段(Code Segment)<br>   DS：数据段(Data Segment)<br>   ES：附加数据段(Extra Segment)<br>   SS：堆栈段(Stack Segment)<br>   FS：附加段<br>   GS 附加段</p><p>指令寄存器：<br>EIP 指令指针寄存器，低16位为IP（8086），它存储的是下一条要执行指令的地址。</p><p>标志寄存器：<br>    IOPL(I/O Privilege Level) I/O特权级字段，它的宽度为2bit,它指定了I/O指令的特权级。如果当前的特权级别在数值上小于或等于IOPL，那么I/O指令可执行。否则，将发生一个保护性异常。<br>    NT(Nested Task): 控制中断返回指令IRET,它宽度为1位。NT=0,用堆栈中保存的值恢复EFLAGS，CS和EIP从而实现中断返回；NT=1，则通过任务切换实现中断返回。<br>    RF(Restart Flag): 重启标志，它的宽度是1位。它主要控制是否接受调试故障。RF=0接受，RF=1忽略。如果你的程序每一条指令都被成功执行，那么RF会被清0。而当接受到一个非调试故障时，处理器置RF=1。<br>    VM(Virtual Machine): 虚拟8086模式(用软件来模拟8086的模式，所以也称虚拟机)。VM=0,处理器工作在一般的保护模式下；VM=1，工作在V8086模式下。<br>    其它16个标志位的含义和8086一样：<br>    CF(Carry Flag): 进位标志位，由CLC，STC两标志位来控制，在无符号算数运算的结果无法容纳于目的操作数中时被设置<br>    PF(Parity Flag): 奇偶标志位<br>    AF(Assistant Flag): 辅助进位标志位<br>    ZF(Zero Flag): 零标志位<br>    SF(Singal Flag): 符号标志位<br>    IF(Interrupt Flag): 中断允许标志位,由CLI，STI两条指令来控制<br>    DF(Direction Flag): 向量标志位，由CLD，STD两条指令来控制<br>    OF(Overflow Flag): 溢出标志位</p><p>PSW（Program Flag)程序状态字寄存器，是一个16位寄存器，由条件码标志（flag）和控制标志构成<br>    OF（Overflow Flag)溢出标志。溢出时为1,否则置0<br>    SF（Sign Flag）符号标志。结果为负时置1,否则置0<br>    ZF（Zero Flag)零标志，运算结果为0时ZF位置1,否则置0<br>    CF（Carry Flag)进位标志，进位时置1,否则置0<br>    AF（Auxiliary carry Flag）辅助进位标志，记录运算时第3位（半个字节）产生的进位置。有进位时1,否则置0<br>    PF（Parity Flag）奇偶标志。结果操作数中1的个数为偶数时置1,否则置0<br>    DF（Direction Flag）方向标志，在串处理指令中控制信息的方向<br>    IF（Interrupt Flag）中断标志<br>    TF（Trap Flag）陷井标志</p><h2 id="深入理解计算机系统"><a href="#深入理解计算机系统" class="headerlink" title="深入理解计算机系统"></a>深入理解计算机系统</h2><p>今天读了《深入理解计算机系统》第1章部分，通过一个hello程序执行过程来进行对计算机系统的学习。<br><strong>hello程序的生命周期</strong><br>源程序hello.c-&gt;(预处理器)-&gt;修改的源程序hello.i-&gt;(编译器)-&gt;汇编程序hello.s-&gt;(汇编器)-&gt;可重定位目标程序hello.o+printf.o-&gt;(链接器)-&gt;可执行目标程序hello<br>printf函数存放于printf.o中，它是每个C编译器都会提供的标准库中的一个函数。<br>通过这样一个简单的程序来了解编译系统是如何工作的，理解编译系统是大有益处的，它可以帮助我们优化程序性能、理解链接时出现的错误、避免安全漏洞。<br><strong>计算机系统的硬件组成</strong><br>总线：携带信息字节并负责在各个部件间传递。<br>I/O设备：系统与外部世界连接的通道，比如鼠标、键盘、磁盘都属于输入输出设备。<br>主存：在处理器执行程序时，用来存放程序和程序处理的数据。<br>处理器：解释执行存储在主存中指令的引擎。<br>随着近些年半导体技术的发展，加快处理器的运行速度比加快主存的运行速度要容易和便宜的多，处理器和主存之间的差距不断增大，为了减少这种差异所带来的影响，加入了一种高速缓存机制。高速缓冲存储器是存在于主存与CPU之间的一级存储器， 由静态存储芯片(SRAM)组成，容量比较小但速度比主存高得多，接近于CPU的速度。由局部性原理可以知道，在CPU访问存储器时，无论是存取指令还是存取数据，所访问的存储单元都趋于聚集在一个较小的连续区域中。通过让高速缓存里存放可能经常访问的数据的方法，可以大幅度提高提升程序执行的速度。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;代码分析&quot;&gt;&lt;a href=&quot;#代码分析&quot; class=&quot;headerlink&quot; title=&quot;代码分析&quot;&gt;&lt;/a&gt;代码分析&lt;/h2&gt;&lt;p&gt;1.在汇编代码中，发现有很多[],[]表示是间接寻址，bx和[bx]的区别是，前者操作数就是bx中存放的数，后者操作数是以b
+      
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>304Challenge:代码分析4</title>
+    <link href="http://yoursite.com/2019/04/30/304Challenge-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%904/"/>
+    <id>http://yoursite.com/2019/04/30/304Challenge-代码分析4/</id>
+    <published>2019-04-30T12:35:11.000Z</published>
+    <updated>2019-04-30T13:16:56.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="sub-E90代码分析"><a href="#sub-E90代码分析" class="headerlink" title="sub_E90代码分析"></a>sub_E90代码分析</h2><p>今天分析到case 151、case 152卡了，没有做上匹配，先来说一下我的理解。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">.text:0000000000000EF3                 movzx   eax, word ptr [rbx+22h]</span><br><span class="line">.text:0000000000000EF7                 add     eax, 0FFFFFFFEh</span><br><span class="line">.text:0000000000000EFA                 mov     [rbx+22h], ax</span><br><span class="line">.text:0000000000000EFE                 movzx   edx, ax</span><br><span class="line">.text:0000000000000F01                 cmp     edx, 7FFDh</span><br><span class="line">.text:0000000000000F07                 jnb     loc_13CF</span><br><span class="line">.text:0000000000000F0D                 rol     di, 8</span><br><span class="line">.text:0000000000000F11                 mov     [rcx+rdx], di</span><br><span class="line">.text:0000000000000F15                 cmp     byte ptr [r15], 27h </span><br><span class="line">.text:0000000000000F19                 jnz     loc_139F</span><br><span class="line">.text:0000000000000F1F                 movzx   eax, word ptr [r15+2]</span><br><span class="line">.text:0000000000000F24                 rol     ax, 8</span><br><span class="line">.text:0000000000000F28                 add     [rbx+1Eh], ax</span><br><span class="line">.text:0000000000000F2C                 jmp     loc_EA6</span><br></pre></td></tr></table></figure></p><p>EAX和AX存在某种联系，EAX与AX不是独立的，EAX是32位的寄存器，而AX是EAX的低16位。<br>举例来说mov eax, FFFFFFFEh，那么AX将会是eax的低16位，也就是FFFEh。<br>而如果此时mov ax，3344h，那么eax的值将变为FFFF3344h，所以对ax的赋值是会影响eax的。<br>同样，AH是ax的高8位，而AL是ax的低8位，这就是说ah为33h，al为44h。<br>在EFE处，将ax的数据传送给edx，之后和7FFDh作比较，不低于7FFDh就直接退出了。接下来操作数和39比，不等于跳loc_139F，两种情况做的处理形式差不多。我猜想此功能是对操作数做一个if-else处理，但如果是这样的话就是一个复合的汇编指令了，或者是我没见过的汇编指令，还需要继续查资料。</p><h2 id="其他辅助解题的资料"><a href="#其他辅助解题的资料" class="headerlink" title="其他辅助解题的资料"></a>其他辅助解题的资料</h2><p><strong>虚拟寄存器</strong><br>VMRE共有40个寄存器，包括5个段寄存器、5个指针寄存器、10个通用寄存器、 10个双精度寄存器和10个单精度寄存器，如图I所示 。其中，段寄存器把地址空间划分成不同的地址段 ；指针寄存器用来记录指令地址和保存堆栈地址的，例如 ：IP是指令指针 ；SP是堆栈指针 ；BP是基址指针；通用数据寄存器是用来存储64位整型数的；双精度寄存器是用来存储64位双精度的浮点数；单精度寄存器是用来存储32位单精度的浮点数。<br><strong>虚拟内存的设计和管理</strong><br>在VMRE设计中，通过一个字符串指针来开辟一块连续的内存地址作为虚拟 内存空间，存储程序的字节码指令。由于在32位机器上无法提供这么多的物理内存，因此VMRE采用先预读后分配的原则来开辟 虚拟内存，即先对字节码文件的大小进行预读，根据其大小再从物理内存中分配足够的内存作为虚拟内存 ，如果剩余的物理内存无法满足需要 ，则退出该次分配。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;sub-E90代码分析&quot;&gt;&lt;a href=&quot;#sub-E90代码分析&quot; class=&quot;headerlink&quot; title=&quot;sub_E90代码分析&quot;&gt;&lt;/a&gt;sub_E90代码分析&lt;/h2&gt;&lt;p&gt;今天分析到case 151、case 152卡了，没有做上匹配，先来
+      
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>304Challenge:代码分析3</title>
+    <link href="http://yoursite.com/2019/04/28/304Challenge-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%903/"/>
+    <id>http://yoursite.com/2019/04/28/304Challenge-代码分析3/</id>
+    <published>2019-04-28T05:54:48.000Z</published>
+    <updated>2019-04-28T08:57:32.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="sub-E90代码分析"><a href="#sub-E90代码分析" class="headerlink" title="sub_E90代码分析"></a>sub_E90代码分析</h2><p>继续分析接下来的switch分支情况<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">  case 144:</span><br><span class="line">        goto LABEL_38;</span><br><span class="line">      case 145:</span><br><span class="line">        if ( !*((_DWORD *)v1 + 10) )</span><br><span class="line">          goto LABEL_38;</span><br><span class="line">        return v2;</span><br><span class="line">      case 146:</span><br><span class="line">        if ( !*((_DWORD *)v1 + 10) )</span><br><span class="line">          return v2;</span><br><span class="line">        goto LABEL_38;</span><br><span class="line">      case 147:</span><br><span class="line">        if ( *((_DWORD *)v1 + 10) &lt; 0 )</span><br><span class="line">          goto LABEL_38;</span><br><span class="line">        return v2;</span><br><span class="line">      case 148:</span><br><span class="line">        if ( *((_DWORD *)v1 + 10) &lt;= 0 )</span><br><span class="line">          goto LABEL_38;</span><br><span class="line">        return v2;</span><br><span class="line">      case 149:</span><br><span class="line">        if ( *((_DWORD *)v1 + 10) &lt;= 0 )</span><br><span class="line">          return v2;</span><br><span class="line">        goto LABEL_38;</span><br><span class="line">      case 150:</span><br><span class="line">        if ( *((_DWORD *)v1 + 10) &gt;= 0 )</span><br><span class="line">LABEL_38:</span><br><span class="line">          *((_WORD *)v1 + 15) = __ROL2__(*((_WORD *)v7 + 1), 8) + v8;</span><br><span class="line">        return v2;</span><br></pre></td></tr></table></figure></p><p>其实可以看出这些情况主要负责执行控制指令，JMP、JZ、JNZ、JG、JS、JNS这些指令。<br>对于144，执行的是无条件跳转指令JMP，跳转到相应的地址。<br>145，执行的是等于零则跳转指令JZ，跳转到相应的地址。<br>146，执行的是不等于零则跳转指令JNZ，跳转到相应的地址。<br>147，执行的是负号则跳转指令JS，跳转到相应的地址。<br>148，执行的是不大于0则跳转指令JNG，跳转到相应的地址。<br>149，执行的是大于0则跳转指令JG，跳转到相应的地址。<br>150，执行的是非负则跳转指令JNS，跳转到相应的地址。<br>只看这些伪代码是分析不出来具体指令的，比如说当和0比较的时候，如何区别JS和JL呢，在这时就要结合汇编代码一起看了，看IDA文本视图，就别看IDA图形视图了，找线和框框容易找哭。文本视图里case的情况都是集中在一起的，更容易分析。然后根据汇编代码确定出具体的指令，拿伪代码做验证，这样就可以了。</p><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>先来总结今天遇到的汇编代码</p><table><thead><tr><th style="text-align:center">指令</th><th style="text-align:center">含义</th><th style="text-align:center">操作码</th></tr></thead><tbody><tr><td style="text-align:center">JMP $R</td><td style="text-align:center">跳转到$R给出的地址</td><td style="text-align:center">32</td></tr><tr><td style="text-align:center">JZ $R1,$R2,$R3</td><td style="text-align:center">如果$R1=$R2，跳转到R3给出的地址</td><td style="text-align:center">33</td></tr><tr><td style="text-align:center">JNZ $R1,$R2,$R3</td><td style="text-align:center">如果$R1!=$R2，跳转到R3给出的地址</td><td style="text-align:center">34</td></tr><tr><td style="text-align:center">JS $R1,$R2</td><td style="text-align:center">如果$R1&lt;0，跳转到R2给出的地址</td><td style="text-align:center">35</td></tr><tr><td style="text-align:center">JNS $R1,$R2</td><td style="text-align:center">如果$R1&gt;=0，跳转到R2给出的地址</td><td style="text-align:center">38</td></tr><tr><td style="text-align:center">JG $R1,$R2,$R3</td><td style="text-align:center">如果$R1&gt;$R2，跳转到R3给出的地址</td><td style="text-align:center">37</td></tr><tr><td style="text-align:center">JNG $R1,$R2,$R3</td><td style="text-align:center">如果$R1&lt;=$R2，跳转到R3给出的地址</td><td style="text-align:center">36</td></tr></tbody></table><p>JMP指令的实现很简单,把$IP寄存器的值修改为JMP指令的寄存器操作数里的数值就行了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">JMP:</span><br><span class="line">badAddress(R[RAM[R[$IP]+1]],R[$IP]);</span><br><span class="line">R[$IP]=R[RAM[R[$IP]+1]];</span><br><span class="line">JZ:</span><br><span class="line">if(R[RAM[R[$IP]+1]]==R[RAM[R[$IP]+2]])&#123;</span><br><span class="line">badAddress(R[RAM[R[$IP]+3]],R[$IP]);</span><br><span class="line">R[$IP]=R[RAM[R[$IP]+3]];</span><br><span class="line">&#125;</span><br><span class="line">else&#123;</span><br><span class="line">R[$IP]=R[$IP]+4;</span><br><span class="line">&#125;</span><br><span class="line">······</span><br></pre></td></tr></table></figure></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;sub-E90代码分析&quot;&gt;&lt;a href=&quot;#sub-E90代码分析&quot; class=&quot;headerlink&quot; title=&quot;sub_E90代码分析&quot;&gt;&lt;/a&gt;sub_E90代码分析&lt;/h2&gt;&lt;p&gt;继续分析接下来的switch分支情况&lt;br&gt;&lt;figure clas
+      
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>304Challenge:反汇编算法</title>
+    <link href="http://yoursite.com/2019/04/25/304Challenge-%E5%8F%8D%E6%B1%87%E7%BC%96%E7%AE%97%E6%B3%951/"/>
+    <id>http://yoursite.com/2019/04/25/304Challenge-反汇编算法1/</id>
+    <published>2019-04-25T08:23:12.000Z</published>
+    <updated>2019-04-28T08:03:52.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>今天偶然在图书馆发现一本《IDA PRO权威指南》，我上回搜还没有，原来是图书馆查询系统还要区别大小写，哼~既然想了解机器指令是如何转为汇编指令的，那就需要了解基本的反汇编算法。</p><h2 id="反汇编算法"><a href="#反汇编算法" class="headerlink" title="反汇编算法"></a>反汇编算法</h2><h3 id="算法思路"><a href="#算法思路" class="headerlink" title="算法思路"></a>算法思路</h3><p><strong>第一步，确定进行反汇编的代码区域</strong><br>对于一个反汇编可执行文件，通常指令与数据混杂在一起，首先要做的就是区分它们。对于Unix系统常用的可执行和链接格式和Windows系统下的可移植可执行格式的文件，这些格式通常含有一种机制，表现为层次文件头的形式，来确定文件中包含代码和代码入口点的位置。</p><p><strong>第二步，获取指令和操作数</strong><br>找到指令的起始地址后，需要读取该地址所包含的值，并执行一次表查找，将操作码和助记符对应起来。根据不同的指令集，还需要获取该指令包含的操作数。对于一个固定长度的指令集，这个过程就比较简单；但多数情况下我们遇到的都是一些非固定长度的指令集，在这种情况下就大大增加了反汇编的难度，需要检索额外的指令字节。同时这个过程也是极为关键，很多文件正是因为这个过程最终导致错误的翻译。</p><p><strong>第三步，格式转换，输出</strong><br>获取到指令和操作数后，需要进行汇编语言等价形式的转换，并将转换的结果进行输出。在这里介绍两种常见的汇编语言格式：AT&amp;T和Intel。<br>GCC采用的是AT&amp;T的汇编格式, 也叫GAS格式(Gnu ASembler GNU汇编器), 而微软采用Intel的汇编格式。语法上主要有以下几个不同：<br><strong>寄存器命名原则</strong><br>在 AT&amp;T 汇编格式中，寄存器名要加上 ‘%’ 作为前缀；而在 Intel 汇编格式中，寄存器名不需要加前缀。<br><strong>源/目的操作数顺序</strong><br>在 Intel 汇编格式中，目标操作数在源操作数的左边；而在 AT&amp;T 汇编格式中，目标操作数在源操作数的右边。<br><strong>常数/立即数的格式</strong><br>在 AT&amp;T 汇编格式中，用 ‘$’ 前缀表示一个立即操作数；而在 Intel 汇编格式中，立即数的表示不用带任何前缀。<br><strong>操作数长度标识</strong><br>在 AT&amp;T 汇编格式中，操作数的字长由操作符的最后一个字母决定，后缀’b’、’w’、’l’分别表示操作数为字节（byte，8 比特）、字（word，16 比特）和长字（long，32比特）；而在 Intel 汇编格式中，操作数的字长是用 “byte ptr” 和 “word ptr” 等前缀来表示的。<br><strong>跳转指令</strong><br>在 AT&amp;T 汇编格式中，绝对转移和调用指令（jump/call）的操作数前要加上’ * ‘作为前缀，而在 Intel 格式中则不需要。</p><p><strong>第四步，重复上述过程至结束</strong><br>输出一条指令后，继续反汇编下一条指令，并重复上述过程，直至反汇编完文件中的所有指令。</p><h3 id="线性扫描反汇编"><a href="#线性扫描反汇编" class="headerlink" title="线性扫描反汇编"></a>线性扫描反汇编</h3><p>原理：顺序分析，一条指令结束，另一条指令开始。<br><strong>算法步骤</strong><br>1.位置指针lpStart指向代码段开始处<br>2.从lpStart位置开始尝试匹配指令，并得到指令长度n<br>3.如果2成功，则反汇编（Intel风格或者AT&amp;T风格）从lpStart之后n个数据；如果失败，则退出<br>4.位置指针lpStart赋值为lpStart+n，即上条指令的结尾<br>5.判断lpStart是否超过了代码段结尾处，如果超出则结束。如果不超出则继续2过程。</p><p>线性扫描算法的主要优点，在于它能够完全覆盖程序的所有代码段。线性扫描方法的一个主要缺点，是它没有考虑到代码中可能混有数据。<br>GNU调试器（gdb）、微软公司的WinDbg调试器和objdump实用工具的反汇编引擎均采用线性扫描算法。</p><h3 id="递归下降反汇编"><a href="#递归下降反汇编" class="headerlink" title="递归下降反汇编"></a>递归下降反汇编</h3><p>原理：根据一条指令是否被另一条指令引用来决定是否对其进行反汇编。<br>分类：<br>1.顺序流指令：直接解析它后面的下一条指令，如MOV、PUSH、POP<br>2.条件分支指令：解析它的所有条件路径，如JNZ<br>3.无条件分支指令：反汇编器会尝试定位到跳转的目标，但有可能失败（如JMP EAX,EAX在静态环境下无法确认)<br>4.函数调用指令：和无条件分支指令相似，如CALL EAX<br>5.返回指令：由于RET返回的地址实际是从栈中取得的，但反汇编器不可能访问到栈，所以就会终止</p><p>递归下降算法的主要优点是可以区别代码和数据，缺点是它无法处理间接代码路径。<br>IDA Pro是一种最为典型的递归下降反汇编器。</p><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过上面的分析可以得出，在目前，没有一个反汇编器可以输出完全正确的结果，但IDA和其他的汇编器不同，它可以提供大量机会来指导和推翻它的决定，最终得到正确的反汇编。这本书还介绍了许多IDA的拓展功能，比如处理器模块就和本阶段的任务有关，之后会进行了解。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;今天偶然在图书馆发现一本《IDA PRO权威指南》，我上回搜还没有，原来是图书馆查询系统还要区别大小写，哼~既然想了解机器指令是如何转为汇编指令的，那就需要了解基本的反汇编算法。&lt;/p&gt;
+&lt;h2 id=&quot;反汇编算法&quot;&gt;&lt;a href=&quot;#反汇编算法&quot; class=&quot;head
+      
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>304Challenge:代码分析2</title>
+    <link href="http://yoursite.com/2019/04/24/304Challenge-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%902/"/>
+    <id>http://yoursite.com/2019/04/24/304Challenge-代码分析2/</id>
+    <published>2019-04-24T06:36:05.000Z</published>
+    <updated>2019-04-24T08:45:00.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="main函数"><a href="#main函数" class="headerlink" title="main函数"></a>main函数</h2><p>继续分析main函数，昨天分析了main函数的前一部分，把文件内容以二进制形式读取到v4中，之后令unk_202014 = 1，进入一个循环中，调用sub_E90函数，传参v4。打开sub_E90的伪代码，发现一堆形式上有些类似的代码，猜测可能是指令集吧。<br>sub_E90有许多switch条件选择语句，通过不同的匹配执行不同的操作指令，将二进制指令转化为汇编指令，并执行。<br>接下来我将会依据sub_E90中的一些语句，搜集机器指令转为汇编指令的资料。</p><h2 id="关于指令"><a href="#关于指令" class="headerlink" title="关于指令"></a>关于指令</h2><h3 id="机器指令"><a href="#机器指令" class="headerlink" title="机器指令"></a>机器指令</h3><p>机器指令是CPU能直接识别并执行的指令，它的表现形式是二进制编码。机器指令通常由操作码和操作数两部分组成，操作码指出该指令所要完成的操作，即指令的功能，操作数指出参与运算的对象，以及运算结果所存放的位置等。</p><h3 id="汇编指令"><a href="#汇编指令" class="headerlink" title="汇编指令"></a>汇编指令</h3><p>汇编指令是汇编语言中使用的一些操作符和助记符,还包括一些伪指令(如assume,end)。用于告诉汇编程序如何进行汇编的指令，它既不控制机器的操作也不被汇编成机器代码，只能为汇编程序所识别并指导汇编如何进行。</p><h3 id="机器指令转为汇编指令"><a href="#机器指令转为汇编指令" class="headerlink" title="机器指令转为汇编指令"></a>机器指令转为汇编指令</h3><p>根据编译原理的相关知识，对一段语句进行分析时，要进行词法分析-&gt;语法分析-&gt;语义分析-&gt;(中间代码生成)-&gt;目标代码生成，通过这样一个过程，可以将高级语言源程序生成为汇编代码，生成的汇编代码再由汇编器连接器等生成目标机器上的可执行代码。</p><p>那对于机器指令转为汇编指令其实原理也很相似，先进行分词，sub_CE0关闭文件流后，执行一大段SSE指令，应该是完成这个功能的。一条汇编指令是由指令码、源操作数SRC、目的操作数DST、注释几个部分组成。通过分词可以很清晰的看出这几个部分。<br>将分好的内容返回给main函数，之后进入sub_E90，也就是所谓的语法分析+语义分析。</p><p>对于一个反向汇编系统而言，它要从第一条指令开始反向汇编。读进来第一个字节，这个字节肯定是指令，而不是数据。查找指令表，看其指令结构是几个字节的，如00，是空操作。那么就直接解析为NOP（空操作）从字节00-&gt;变成了NOP。如25H，00H，表示把00H内存单元和A单元内容相加放到A。<br>比如通过分析下面几条十六进制指令可以得到这样的汇编指令：<br>0200250000002500-&gt;LJMP 0025H，NOP，NOP，NOP，ADD A,0<br>0025000025020025-&gt;NOP，ADD A,0，NOP，ADD A,02，NOP,ADD A,?<br>2500025020025000-&gt;ADD A,0，LJMP 5020H，LJMP 5000H</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;main函数&quot;&gt;&lt;a href=&quot;#main函数&quot; class=&quot;headerlink&quot; title=&quot;main函数&quot;&gt;&lt;/a&gt;main函数&lt;/h2&gt;&lt;p&gt;继续分析main函数，昨天分析了main函数的前一部分，把文件内容以二进制形式读取到v4中，之后令unk_2
+      
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>304Challenge:代码分析1</title>
+    <link href="http://yoursite.com/2019/04/23/304Challenge-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%901/"/>
+    <id>http://yoursite.com/2019/04/23/304Challenge-代码分析1/</id>
+    <published>2019-04-23T06:19:07.000Z</published>
+    <updated>2019-04-23T08:27:18.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="main函数"><a href="#main函数" class="headerlink" title="main函数"></a>main函数</h2><p>今天对main函数的汇编代码结合伪代码进行分析，使用F5大法生成伪代码。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">char *v4; // rbx</span><br><span class="line">  int v5; // eax</span><br><span class="line"></span><br><span class="line">  if ( a4 == 2 )</span><br><span class="line">  &#123;</span><br><span class="line">    signal(2, (__sighandler_t)handler);</span><br><span class="line">    v4 = sub_CE0(a1[1]);</span><br><span class="line">    unk_202014 = 1;</span><br><span class="line">    while ( 1 )</span><br><span class="line">    &#123;</span><br><span class="line">      v5 = sub_E90(v4);</span><br><span class="line">      if ( v5 )</span><br><span class="line">        break;</span><br><span class="line">      if ( !unk_202014 )</span><br><span class="line">        goto LABEL_8;</span><br><span class="line">    &#125;</span><br><span class="line">    if ( v5 == 2 )</span><br><span class="line">      puts(&quot;Illegal Instruction&quot;);</span><br><span class="line">LABEL_8:</span><br><span class="line">    nullsub_1(v4);</span><br><span class="line">  &#125;</span><br><span class="line">  else</span><br><span class="line">  &#123;</span><br><span class="line">    fprintf(stderr, &quot;Usage: %s &lt;myvm program&gt;\n&quot;, *a1, a3);</span><br><span class="line">  &#125;</span><br><span class="line">  return 0LL;</span><br></pre></td></tr></table></figure></p><p>首先对栈进行初始化操作，然后判断a4(edi)==2?<br>不成立就进行print操作，输出file流文件，然后跳C3D出栈。<br>成立的话会调用一个signal函数，查询了一下signal(a1,a2),a1为要进行处理的信号，这里为2；a2为处理方式，一般来说处理方式一般有三种：<br>SIG_IGN 忽略该信号<br>SIG_DFL 恢复对信号的系统默认处理<br>sighandler_t 执行handler函数<br>在此处就需要执行handler函数，使用handler处理信号量2.<br>令rdi=rbx+8，调用sub_CE0<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">FILE *v1; // rax</span><br><span class="line">  FILE *v2; // rbx</span><br><span class="line">  __int64 v3; // r15</span><br><span class="line">  void *v4; // r14</span><br><span class="line">  char *v5; // rbx</span><br><span class="line"></span><br><span class="line">  v1 = fopen(a1, &quot;rb&quot;);</span><br><span class="line">  v2 = v1;</span><br><span class="line">  if ( !v1 )</span><br><span class="line">    return 0LL;</span><br><span class="line">  fseek(v1, 0LL, 2);</span><br><span class="line">  v3 = ftell(v2);</span><br><span class="line">  fseek(v2, 0LL, 0);</span><br><span class="line">  v4 = malloc(0x10000uLL);</span><br><span class="line">  memset(v4, 0, 0x10000uLL);</span><br><span class="line">  fread(v4, 1uLL, v3, v2);</span><br><span class="line">  fclose(v2);</span><br><span class="line">  _mm_storeu_si128(</span><br><span class="line">    (__m128i *)&amp;unk_202018 + 4096,</span><br><span class="line">    _mm_unpacklo_epi64((__m128i)(unsigned __int64)&amp;unk_202018, (__m128i)((unsigned __int64)&amp;unk_202018 + 0x8000)));</span><br><span class="line">  memcpy(&amp;unk_202018, v4, 0x10000uLL);</span><br><span class="line">  _mm_storeu_si128((__m128i *)&amp;unk_202018 + 4097, (__m128i)0LL);</span><br><span class="line">  *(_QWORD *)((char *)&amp;unk_202018 + 65566) = 0LL;</span><br><span class="line">  *((_WORD *)&amp;unk_202018 + 32785) = 32764;</span><br><span class="line">  *((_QWORD *)&amp;unk_202018 + 8197) = 0LL;</span><br><span class="line">  v5 = (char *)&amp;unk_202018 + 0x10000;</span><br><span class="line">  free(v4);</span><br><span class="line">  return v5;</span><br></pre></td></tr></table></figure></p><p>sub_CE0里先打开a1文件，如果是空就可以直接返回了。不为空，就定位文件头和尾，v3是文件首的偏移字节数，再动态分配一个内存，memset对内存初始化操作。读取文件中的数据到新内存中，关闭文件流。之后一大段SSE指令，把一些内容放到&amp;unk_202018中，又将&amp;unk_202018 + 65536赋值给v5.释放内存空间，返回。</p><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在分析过程中遇到几个函数，进行整理。<br>(1)signal(a1,a2)这个在之前分析代码时写过。<br>(2)int fseek(FILE <em> stream, long offset, int fromwhere)把fp的文件读写位置指针移到指定的位置.<br>SEEK_SET     0    文件开头<br>SEEK_CUR    1    文件当前位置<br>SEEK_END    2    文件末尾<br>(3)long ftell(FILE </em> fp) 得到流式文件的当前读写位置,其返回值是当前读写位置偏离文件头部的字节数<br>(4)void <em> malloc(size_t size) 用于申请一块连续的指定大小的内存块区域,以void </em> 类型返回分配的内存区域地址<br>(5)void <em> memset(void </em> s,int c,size_t n) 将已开辟内存空间 s 的首 n 个字节的值设为值 c。<br>(6)size_t   fread(   void   <em> buffer,   size_t   size,   size_t   count,   FILE   </em> stream   ) </p><p>buffer   是读取的数据存放的内存的指针<br>size       是每次读取的字节数<br>count    是读取次数<br>stream   是要读取的文件的指针   </p><p>(7) void _mm_storeu_si128( <strong>m128i * p, </strong>m128i a) 可存储128位数据,将__m128i 变量a的值存储到p所指定的变量中去</p><p>(8)_mm_unpacklo_epi64 (<strong>m128i a, </strong>m128i b) 返回一个m128i的寄存器，它将寄存器a和寄存器b的低64bit数以64bit为单位交织在一块。</p><p>(9)void <em> memcpy(void </em> str1, const void * str2, size_t n) 从存储区 str2 复制 n 个字符到存储区 str1</p><p>由于代码量比较大，今天只分析一小部分，明天继续分析。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;main函数&quot;&gt;&lt;a href=&quot;#main函数&quot; class=&quot;headerlink&quot; title=&quot;main函数&quot;&gt;&lt;/a&gt;main函数&lt;/h2&gt;&lt;p&gt;今天对main函数的汇编代码结合伪代码进行分析，使用F5大法生成伪代码。&lt;br&gt;&lt;figure class=
+      
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>201Challenge</title>
+    <link href="http://yoursite.com/2019/04/15/201Challenge/"/>
+    <id>http://yoursite.com/2019/04/15/201Challenge/</id>
+    <published>2019-04-15T11:37:56.000Z</published>
+    <updated>2019-04-19T04:15:14.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>想说一下，由于明天要中期答辩，再加上我们专业搞的工程认证项目，所以这次检查极为严格。其实之前已经准备的差不多了，但好无奈今天又一堆通知文件发下来，劈头盖脸地又是一通填，一通改，还要签字盖章，心态崩了。所以今天并没有怎么学习测试内容，只是抽空简单看了一下第二阶段的内容。</p><h2 id="二进制拆弹"><a href="#二进制拆弹" class="headerlink" title="二进制拆弹"></a>二进制拆弹</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>第二阶段的主要内容是逆向工程拆除二进制炸弹，总共有6个阶段，炸弹运行各阶段要求输入一个字符串，若输入符合程序预期，该阶段炸弹被拆除，否则爆炸。</p><h3 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h3><p>题目文件包含两个文件：bomb的可执行文件和bomb.c</p><h3 id="使用工具"><a href="#使用工具" class="headerlink" title="使用工具"></a>使用工具</h3><h4 id="objdump工具"><a href="#objdump工具" class="headerlink" title="objdump工具"></a>objdump工具</h4><p>objdump命令是Linux下的反汇编目标文件或者可执行文件的命令，它还有其他作用，下面以ELF格式可执行文件test为例详细介绍：<br>objdump -f test<br>显示test的文件头信息<br>objdump -d test<br>反汇编test中的需要执行指令的那些section<br>objdump -D test<br>与-d类似，但反汇编test中的所有section<br>objdump -h test<br>显示test的Section Header信息<br>objdump -x test<br>显示test的全部Header信息<br>objdump -s test<br>除了显示test的全部Header信息，还显示他们对应的十六进制文件代码</p><h4 id="gdb调试器"><a href="#gdb调试器" class="headerlink" title="gdb调试器"></a>gdb调试器</h4><p>一般来说，GDB主要帮助你完成下面四个方面的功能：<br>1、启动你的程序，可以按照你的自定义的要求随心所欲的运行程序。<br>2、可让被调试的程序在你所指定的调置的断点处停住。（断点可以是条件表达式）<br>3、当程序被停住时，可以检查此时你的程序中所发生的事。<br>4、你可以改变你的程序，将一个BUG产生的影响修正从而测试其他BUG。<br>gdb最常见的几个用法：</p><ol><li>调试程序。有几种方法可以在gdb下运行你的程序：<pre><code>1)    gdb ${你的程序} 进入gdb后，输入run(简写r) ${arg1} ${arg2} … ${argN}2)    gdb --args ${你的程序} ${arg1} ${arg2} … ${argN} 进入gdb后，运行run。3)    gdb进入gdb后，输入file ${你的程序}。然后使用set args  ${arg1} ${arg2} … ${argN} 设定好你的程序参数，再运行run。</code></pre></li><li>调试正在运行的程序：<pre><code>gdb ${你的程序} ${程序pid}</code></pre></li><li>查core：<pre><code>gdb ${你的程序} ${core文件}</code></pre></li></ol><p>gdb常用命令：</p><pre><code>1. backtrace：显示栈信息。简写为bt。2. frame x 切换到第x帧。其中x会在bt命令中显示，从0开始。0表示栈顶。简写为f。3. up/down x 往栈顶/栈底移动x帧。当不输入x时，默认为1。4. print x打印x的信息，x可以是变量，也可以是对象或者数组。简写为p。5. print */&amp;x 打印x的内容/地址。6. call 调用函数。注意此命令需要一个正在运行的程序。</code></pre><h3 id="查看bomb程序的汇编代码"><a href="#查看bomb程序的汇编代码" class="headerlink" title="查看bomb程序的汇编代码"></a>查看bomb程序的汇编代码</h3><p>输入命令 objdump -d bomb&gt;aaa.txt<br>得到<img src="http://1.z9ls.com/t6/701/1555330278x2890186050.jpg" alt></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;想说一下，由于明天要中期答辩，再加上我们专业搞的工程认证项目，所以这次检查极为严格。其实之前已经准备的差不多了，但好无奈今天又一堆通知文件发下来，劈头盖脸地又是一通填，一通改，还要签字盖章，心态崩了。所以今天并没有怎么学习测试内容，只是抽空简单看了一下第二阶段的内容。&lt;/p
+      
+    
+    </summary>
+    
+    
+  </entry>
+  
 </feed>
