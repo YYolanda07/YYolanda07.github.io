@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-05-24T13:14:35.588Z</updated>
+  <updated>2019-05-26T09:23:20.513Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>CSAPP动态内存分配和回收</title>
+    <link href="http://yoursite.com/2019/05/26/CSAPP%E5%8A%A8%E6%80%81%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%92%8C%E5%9B%9E%E6%94%B6/"/>
+    <id>http://yoursite.com/2019/05/26/CSAPP动态内存分配和回收/</id>
+    <published>2019-05-26T09:01:18.000Z</published>
+    <updated>2019-05-26T09:23:20.513Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="动态内存分配"><a href="#动态内存分配" class="headerlink" title="动态内存分配"></a>动态内存分配</h2><p>动态内存分配器维护着一个进程的虚拟内存区域，称为堆。对于每个进程，内核维护着一个变量brk，它指向堆的顶部。<br>分配器分为两种类型:<br>显式分配器: 应用显式地释放任何已分配的块。<br>隐式分配器: 分配器检测一个已分配块何时不再被程序使用，那就释放这个块。隐式分配器也叫垃圾收集器，自动释放未使用的已分配块的过程称为垃圾收集.</p><h3 id="malloc和free"><a href="#malloc和free" class="headerlink" title="malloc和free"></a>malloc和free</h3><pre><code>#include &lt;stdlib.h&gt;void *malloc(size_t size);void free(void *ptr);</code></pre><p>malloc: 分配至少size字节的存储器块，这个块会为可能包含在这个块内的任何数据对象类型做对齐。在Unix系统上，malloc返回一个8字节(双字)边界对齐的块。</p><h3 id="分配器的数据结构"><a href="#分配器的数据结构" class="headerlink" title="分配器的数据结构"></a>分配器的数据结构</h3><p>分配器需要一些数据结构，允许它来区别块边界，以及区别已分配块和空闲块。<br>1.隐式空闲链表<br>一个简单的堆块的格式是，块由一个字的头部、有效载荷，以及可能的额外填充组成。头部编码了这个块的大小，以及这个块是已分配的还是空闲的。<br>我们可以将堆组织为一个连续的已分配块和空闲块的序列，这种结构称为隐式空闲链表。分配器可以通过遍历堆中所有的块，从而间接遍历整个空闲块的集合。<br>隐式空闲链表的优点是简单。显著缺点是任何操作的开销，例如放置分配的块，要求空闲链表的搜索与堆中已分配块和空闲块的总数呈线性关系。<br>放置已分配的块的放置策略:<br>首次适配<br>下一次适配<br>最佳适配<br>2.显式空闲链表<br>使用双向链表而不是隐式空闲链表，使首次适配的分配时间从块总数的线性时间减少到了空闲块数量的线性时间。</p><h2 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h2><p>垃圾收集器定期识别垃圾块(即程序不再需要的已分配块)，并相应的调用free，将这些块放回到空闲链表中.</p><h3 id="Mark-amp-Sweep-标记-amp-清除-算法"><a href="#Mark-amp-Sweep-标记-amp-清除-算法" class="headerlink" title="Mark&amp;Sweep(标记&amp;清除)算法"></a>Mark&amp;Sweep(标记&amp;清除)算法</h3><p>由标记(mark)阶段和清除(sweep)阶段组成，标记阶段标记出根节点的所有可达的已分配的后继，而后面的清除阶段释放每个未被标记的已分配块。在标记阶段的末尾，任何未标记的已分配块都被认定是不可达的，是垃圾，可以在清除阶段回收。</p><h2 id="C中常见的与内存相关的错误"><a href="#C中常见的与内存相关的错误" class="headerlink" title="C中常见的与内存相关的错误"></a>C中常见的与内存相关的错误</h2><p>存储器的错误总是令人沮丧的，特别是在运行了一段时间之后才显示出来，就特别特别的烦人了，列举一些常见的错误，仅供参考：</p><h3 id="间接引用坏指针"><a href="#间接引用坏指针" class="headerlink" title="间接引用坏指针"></a>间接引用坏指针</h3><p>将本来的地址引用写成了内容scanf(“%d”, &amp;val)写成scanf(“%d”, val)</p><h3 id="读未初始化的存储器："><a href="#读未初始化的存储器：" class="headerlink" title="读未初始化的存储器："></a>读未初始化的存储器：</h3><p>在堆中申请了一块空间：int *y = (int *)Malloc(n * sizeof(int));由于堆中的空间是未被初始化的，下面的使用就会出错：y[i] += A[i][j] * x[j];推荐使用calloc函数</p><h3 id="允许栈缓冲溢出："><a href="#允许栈缓冲溢出：" class="headerlink" title="允许栈缓冲溢出："></a>允许栈缓冲溢出：</h3><p>推荐使用fgets函数</p><h3 id="假设指针和它指向的对象是相同大小的"><a href="#假设指针和它指向的对象是相同大小的" class="headerlink" title="假设指针和它指向的对象是相同大小的"></a>假设指针和它指向的对象是相同大小的</h3><p>使用int **A = (int **)Malloc(n * sizeof(int));本来是想创建的一个int *的数组，但是sizeof上面用到的确是int</p><h3 id="错位"><a href="#错位" class="headerlink" title="错位"></a>错位</h3><p>申请了n个空间，却要访问n+1处位置</p><h3 id="引用指针而不是它指向的对象"><a href="#引用指针而不是它指向的对象" class="headerlink" title="引用指针而不是它指向的对象"></a>引用指针而不是它指向的对象</h3><p>*size–; /* This should be (*size)– */<br>其中，–和*有相同的优先级，由于这是右结合。所以先–再*，就出错了。</p><h3 id="误解指针运算"><a href="#误解指针运算" class="headerlink" title="误解指针运算"></a>误解指针运算</h3><p>p += sizeof(int); /* Should be p++ */<br>指针p++就会指向下一个位置，+= int的大小的话，就跳了几个数据了</p><h3 id="引用不存在的变量"><a href="#引用不存在的变量" class="headerlink" title="引用不存在的变量"></a>引用不存在的变量</h3><p>本地变量在栈中创建，函数结束以后就已经不存在了。</p><h3 id="引用已经释放了的块中的数据"><a href="#引用已经释放了的块中的数据" class="headerlink" title="引用已经释放了的块中的数据"></a>引用已经释放了的块中的数据</h3><p>在行10的时候已经将块释放了，在行14的时候又在使用.</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;动态内存分配&quot;&gt;&lt;a href=&quot;#动态内存分配&quot; class=&quot;headerlink&quot; title=&quot;动态内存分配&quot;&gt;&lt;/a&gt;动态内存分配&lt;/h2&gt;&lt;p&gt;动态内存分配器维护着一个进程的虚拟内存区域，称为堆。对于每个进程，内核维护着一个变量brk，它指向堆的顶部。
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
   
   <entry>
     <title>CSAPP虚存的使用和管理</title>
@@ -445,30 +468,6 @@
       
       
         &lt;h2 id=&quot;虚拟机指令的执行&quot;&gt;&lt;a href=&quot;#虚拟机指令的执行&quot; class=&quot;headerlink&quot; title=&quot;虚拟机指令的执行&quot;&gt;&lt;/a&gt;虚拟机指令的执行&lt;/h2&gt;&lt;h3 id=&quot;执行流程图&quot;&gt;&lt;a href=&quot;#执行流程图&quot; class=&quot;headerlink
-      
-    
-    </summary>
-    
-    
-      <category term="304反汇编测试" scheme="http://yoursite.com/tags/304%E5%8F%8D%E6%B1%87%E7%BC%96%E6%B5%8B%E8%AF%95/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>304Challenge:虚拟机的实现</title>
-    <link href="http://yoursite.com/2019/04/26/304Challenge-%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9A%84%E5%AE%9E%E7%8E%B0/"/>
-    <id>http://yoursite.com/2019/04/26/304Challenge-虚拟机的实现/</id>
-    <published>2019-04-26T11:59:25.000Z</published>
-    <updated>2019-05-24T13:19:39.697Z</updated>
-    
-    <content type="html"><![CDATA[<p>为了进一步了解虚拟机是如何解释执行任意一段与当前指令集相符的程序，阅读了一篇关于基于寄存器的的虚拟机实现的相关文章。</p><h2 id="虚拟机的设计与实现"><a href="#虚拟机的设计与实现" class="headerlink" title="虚拟机的设计与实现"></a>虚拟机的设计与实现</h2><h3 id="虚拟机原理"><a href="#虚拟机原理" class="headerlink" title="虚拟机原理"></a>虚拟机原理</h3><p>虚拟机用软件模拟指令在硬件机器中执行的全过程，即先从磁盘中读取字节码文件 ，存储到虚拟机开辟的内存段中，再将指令加载到虚拟机寄存器并予以执行。它并不是指某个特定的软件 ，而是一整套完整的规范，可以用不同的程序设计语言在不同的硬件平台上实现。不论是硬件机器还是虚拟机系统 ，只要遵循相同的规范，即可运行遵循该规范的可执行代码。</p><h3 id="两种处理器引擎"><a href="#两种处理器引擎" class="headerlink" title="两种处理器引擎"></a>两种处理器引擎</h3><p>Stack-Based虚拟机在运行时对系统资源的消耗要远小于Register-Based虚拟机 ，但堆栈将会延伸到内存 ，后者的计算处理则全部在芯片内部的寄存器上完成，因此后者的处理速度要远远高于前者。</p><h3 id="虚拟机的工作流程"><a href="#虚拟机的工作流程" class="headerlink" title="虚拟机的工作流程"></a>虚拟机的工作流程</h3><p>1.启动虚拟机，并处理命令行输入<br>2.初始化虚拟机运行环境<br>3.调入并加载文件<br>4.格式化内存存储方式<br>5.执行指令<br>其中虚拟机的初始化和执行字节码阶段是整个程序运行的核心</p><h4 id="初始化虚拟机"><a href="#初始化虚拟机" class="headerlink" title="初始化虚拟机"></a>初始化虚拟机</h4><p>通过输入命令行，获取字节码文件的信息，并传入处理函数。在myvm中其实就是将文件送入sub_CE0()中，将字节码字段加载到 内存空间的正文段。为了清楚的描述sub_CE0()的功能，将它的算法提炼出来如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">if(文件大小为零或文件打开错误)</span><br><span class="line">&#123;记录并打印错误，并直接返回 &#125;</span><br><span class="line">if(正文段、数据段和堆栈段的长度之和 宿主机的可用内存)</span><br><span class="line">&#123;记录并打印错误，并直接返回 &#125;</span><br><span class="line">分配内存 R= malloc(正文段、数据段和堆栈段的长度之和)；</span><br><span class="line">初始化段寄存器：</span><br><span class="line">RICS]指向正文段末尾</span><br><span class="line">R[DS]指向数据段首</span><br><span class="line">R[ES]指向数据段末尾</span><br><span class="line">R[SSI指向堆栈段首</span><br><span class="line">R[TOP]指向堆栈段的末尾 ，即所开辟内存空问的末尾</span><br><span class="line">初始化指针寄存器 ：</span><br><span class="line">R[IP]指向正文段首，即内存地址为O处</span><br><span class="line">R[SP]指向所开辟内存空间的末尾</span><br><span class="line">重新返回字节码文件的字节码部分，调用fseek()定位字节码部分的位置；</span><br><span class="line">读取字节码部分，并将其加载入所开辟的内存正文段中。</span><br></pre></td></tr></table></figure></p><h4 id="执行字节码"><a href="#执行字节码" class="headerlink" title="执行字节码"></a>执行字节码</h4><p>加载好字节码内容后，就该将这些字节码翻译执行了。把这些字节码送入指令执行引擎函数sub_E90中，将字节码指令从虚拟地址0处开始逐条执行，当遇到HALT指令或发生错误时停止。参照基于寄存器的处理器的设计方法 ，此阶段指令执行过程的算法如下(其中，R[IP]表示指令指针寄存器IP的值 ；RAM[R[IP]]表示 内存地址为R[IP]处的指令或数值)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">while(内存地址为r[iP]不等于中止指令HALT)&#123;</span><br><span class="line">switch(内存地址为r[ip]的指令)&#123;</span><br><span class="line">case MOV：&#123;···；&#125;break；</span><br><span class="line">······各种指令的具体执行：</span><br><span class="line">default：&#123;ERROR；&#125;break；</span><br><span class="line">&#125;</span><br><span class="line">将指令指针IP指向下一条指令；</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><p>其实准确来讲myvm中sub_E90函数执行的是中间switch那段，用于识别各种机器指令，并执行。<br>机器指令按照操作数的不同来分，包括双操作数指令(OP DEST，SRC)、单操作数指令(OPDEST)、无操作数指令(op)等3种。由于操作数的不同直接关系到指令指针IP的变化不同，因此R[IP]值的变化将因具体指令的操作数不同而异。下面通过 LAI R1，R2，qword指令来解释具体的指令执行过程 。<br>指令功能：将基地址(reg2)和地址偏移量(8 bytes常量)相加得到的结果存入目的寄存器中<br>指令流程：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">寄存器1=寄存器2的值+8字节常量</span><br><span class="line">R[下标]=R[下标+1]+(signed_int64)*(signed_int64 *)常量地址</span><br><span class="line">R[下标]=R[下标+1]+(signed_int64)*(signed_int64 *)&amp; RAM[下标+2]</span><br><span class="line">下标=RAM[reg1]</span><br><span class="line">R[RAM[R[IP]+1]]=R[RAM[R[IP]+2]]+(signed_int64)*(signed_int64 *)&amp; RAM[R[IP]+3]</span><br></pre></td></tr></table></figure></p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>通过今天的学习验证了之前代码的分析，也初步明确sub_E90中switch分支的结构，下一步应该对switch每一条语句进行分析，识别出每一个分支具体实现了哪条指令。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;为了进一步了解虚拟机是如何解释执行任意一段与当前指令集相符的程序，阅读了一篇关于基于寄存器的的虚拟机实现的相关文章。&lt;/p&gt;
-&lt;h2 id=&quot;虚拟机的设计与实现&quot;&gt;&lt;a href=&quot;#虚拟机的设计与实现&quot; class=&quot;headerlink&quot; title=&quot;虚拟机的设计与实
       
     
     </summary>
