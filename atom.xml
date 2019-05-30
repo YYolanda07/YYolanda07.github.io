@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-05-28T09:24:03.526Z</updated>
+  <updated>2019-05-30T12:41:08.999Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>CSAPP 网络编程</title>
+    <link href="http://yoursite.com/2019/05/30/CSAPP-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/"/>
+    <id>http://yoursite.com/2019/05/30/CSAPP-网络编程/</id>
+    <published>2019-05-30T12:15:16.000Z</published>
+    <updated>2019-05-30T12:41:08.999Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="CS编程模型"><a href="#CS编程模型" class="headerlink" title="CS编程模型"></a>CS编程模型</h2><p>每个网络应用都是基于客户端-服务器模型的。<br>客户端-服务器模型中的基本操作是事务。一个客户端-服务器事务由以下四步组成：<br>1.当一个客户端需要服务时，它向服务器发送一个请求，发起一个事务。<br>2.服务器收到请求后，解释它，并以适当的方式操作它的资源。<br>3.服务器给客户端发送一个响应，并等待下一个请求。<br>4.客户端收到响应并处理它</p><h2 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h2><p>客户端和服务器通常运行在不同的主机上，并通过计算机网络的硬件和软件资源来通信。<br>对主机而言，网络是一种I/O设备，是数据源和数据接收方<br>从物理上而言，网络是一个按照地理远近组成的层次系统。最低层是LAN（局域网），最流行的局域网技术是以太网。</p><h2 id="套接字接口"><a href="#套接字接口" class="headerlink" title="套接字接口"></a>套接字接口</h2><p>套接字接口是一组函数，它们和Unix I/O函数结合起来，用以创建网络应用。</p><h3 id="套接字地址结构"><a href="#套接字地址结构" class="headerlink" title="套接字地址结构"></a>套接字地址结构</h3><p>从Linux内核看，一个套接字就是通信的一个端点，从Linux程序看，套接字就是一个有相应描述符的打开文件.<br>因特网的套接字地址存放在sockaddr_in的16字节结构中，对于IPV4来说，sin_family为AF_INET,sin_port为一个16位的端口号，sin_addr为一个32位的IP地址。</p><h3 id="socket函数"><a href="#socket函数" class="headerlink" title="socket函数"></a>socket函数</h3><p>客户端和服务器使用socket函数来创建一个套接字描述符</p><pre><code>#include&lt;sys/types.h&gt;#include&lt;sys/socket.h&gt;int socket(int domain,int type,int protocol);//返回：成功返回非负描述符，出错-1</code></pre><p><strong>domain：</strong>即协议域，又称为协议族（family）。常用的协议族有，AF_INET、AF_INET6、AF_LOCAL（或称AF_UNIX，Unix域socket）、AF_ROUTE等等。协议族决定了socket的地址类型，在通信中必须采用对应的地址，如AF_INET决定了要用ipv4地址（32位的）与端口号（16位的）的组合、AF_UNIX决定了要用一个绝对路径名作为地址。<br><strong>type：</strong>指定socket类型。常用的socket类型有，SOCK_STREAM、SOCK_DGRAM、SOCK_RAW、SOCK_PACKET、SOCK_SEQPACKET等等。<br>（1）SOCK_STREAM（流套接字） 提供面向连接、可靠的数据传输服务。使用了TCP协议<br>（2）SOCK_DGRAM（数据报套接字）提供无连接的服务，使用UDP协议<br>（3）SOCK_RAW(原始套接字) 提供单一的网络访问，这个socket类型使用ICMP公共协议<br><strong>protocol：</strong>故名思意，就是指定协议。常用的协议有，IPPROTO_TCP、IPPTOTO_UDP、IPPROTO_SCTP、IPPROTO_TIPC等，它们分别对应TCP传输协议、UDP传输协议、STCP传输协议、TIPC传输协议<br>注意：并不是上面的type和protocol可以随意组合的，如SOCK_STREAM不可以跟IPPROTO_UDP组合。当protocol为0时，会自动选择type类型对应的默认协议。<br>例：对于ipv4创建socket,其中使用tcp协议</p><pre><code>sock = socket(AF_INET,SOCK_STREAM,0);</code></pre><h3 id="connect函数"><a href="#connect函数" class="headerlink" title="connect函数"></a>connect函数</h3><p>客户端通过调用connect函数建立和服务器的连接</p><pre><code>#include&lt;sys/socket.h&gt;int connect(int sockfd,const struct sockaddr *addr,socklen_t addrlen);//返回：成功则为0，出错-1</code></pre><p>第一个参数即为客户端的socket描述字<br>第二参数为服务器的socket地址<br>第三个参数为socket地址的长度，一般为sizeof(sockaddr_in)。<br>connect函数回阻塞，一直到连接成功建立或发生错误。</p><h3 id="bind函数"><a href="#bind函数" class="headerlink" title="bind函数"></a>bind函数</h3><p>bind函数告诉内核将addr中的服务器套接字地址和套接字描述符sockfd联系起来</p><pre><code>#include&lt;sys/socket.h&gt;int bind(int sockfd,const struct sockaddr *addr,socklen_t addrlen);//返回：成功0，出错-1</code></pre><p>第一个参数sockfd是由socket()调用返回的套接口文件描述符。<br>第二个参数addr是指向数据结构sockaddr的指针。数据结构sockaddr中包括了关于你的地址、端口和IP地址的信息。<br>第三个参数addrlen可以设置成sizeof(struct sockaddr_in)。</p><h3 id="listen函数"><a href="#listen函数" class="headerlink" title="listen函数"></a>listen函数</h3><p>listen函数将sockfd从一个主动套接字转化为一个监听套接字。<br>如果作为一个服务器，在调用socket()、bind()之后就会调用listen()来监听这个socket，如果客户端这时调用connect()发出连接请求，服务器端就会接收到这个请求。</p><pre><code>#include&lt;sys/socket.h&gt;int listen(int sockfd,int backlog);//成功0，出错-1</code></pre><p>第一个参数即为要监听的socket描述符,第二个参数为相应socket可以排队的最大连接个数。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;CS编程模型&quot;&gt;&lt;a href=&quot;#CS编程模型&quot; class=&quot;headerlink&quot; title=&quot;CS编程模型&quot;&gt;&lt;/a&gt;CS编程模型&lt;/h2&gt;&lt;p&gt;每个网络应用都是基于客户端-服务器模型的。&lt;br&gt;客户端-服务器模型中的基本操作是事务。一个客户端-服务器事
+      
+    
+    </summary>
+    
+    
+      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
   
   <entry>
     <title>搭建一个网站</title>
@@ -452,29 +475,6 @@
     
     </summary>
     
-    
-  </entry>
-  
-  <entry>
-    <title>304Challenge:代码分析3</title>
-    <link href="http://yoursite.com/2019/04/28/304Challenge-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%903/"/>
-    <id>http://yoursite.com/2019/04/28/304Challenge-代码分析3/</id>
-    <published>2019-04-28T05:54:48.000Z</published>
-    <updated>2019-05-24T13:18:56.406Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="sub-E90代码分析"><a href="#sub-E90代码分析" class="headerlink" title="sub_E90代码分析"></a>sub_E90代码分析</h2><p>继续分析接下来的switch分支情况<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">  case 144:</span><br><span class="line">        goto LABEL_38;</span><br><span class="line">      case 145:</span><br><span class="line">        if ( !*((_DWORD *)v1 + 10) )</span><br><span class="line">          goto LABEL_38;</span><br><span class="line">        return v2;</span><br><span class="line">      case 146:</span><br><span class="line">        if ( !*((_DWORD *)v1 + 10) )</span><br><span class="line">          return v2;</span><br><span class="line">        goto LABEL_38;</span><br><span class="line">      case 147:</span><br><span class="line">        if ( *((_DWORD *)v1 + 10) &lt; 0 )</span><br><span class="line">          goto LABEL_38;</span><br><span class="line">        return v2;</span><br><span class="line">      case 148:</span><br><span class="line">        if ( *((_DWORD *)v1 + 10) &lt;= 0 )</span><br><span class="line">          goto LABEL_38;</span><br><span class="line">        return v2;</span><br><span class="line">      case 149:</span><br><span class="line">        if ( *((_DWORD *)v1 + 10) &lt;= 0 )</span><br><span class="line">          return v2;</span><br><span class="line">        goto LABEL_38;</span><br><span class="line">      case 150:</span><br><span class="line">        if ( *((_DWORD *)v1 + 10) &gt;= 0 )</span><br><span class="line">LABEL_38:</span><br><span class="line">          *((_WORD *)v1 + 15) = __ROL2__(*((_WORD *)v7 + 1), 8) + v8;</span><br><span class="line">        return v2;</span><br></pre></td></tr></table></figure></p><p>其实可以看出这些情况主要负责执行控制指令，JMP、JZ、JNZ、JG、JS、JNS这些指令。<br>对于144，执行的是无条件跳转指令JMP，跳转到相应的地址。<br>145，执行的是等于零则跳转指令JZ，跳转到相应的地址。<br>146，执行的是不等于零则跳转指令JNZ，跳转到相应的地址。<br>147，执行的是负号则跳转指令JS，跳转到相应的地址。<br>148，执行的是不大于0则跳转指令JNG，跳转到相应的地址。<br>149，执行的是大于0则跳转指令JG，跳转到相应的地址。<br>150，执行的是非负则跳转指令JNS，跳转到相应的地址。<br>只看这些伪代码是分析不出来具体指令的，比如说当和0比较的时候，如何区别JS和JL呢，在这时就要结合汇编代码一起看了，看IDA文本视图，就别看IDA图形视图了，找线和框框容易找哭。文本视图里case的情况都是集中在一起的，更容易分析。然后根据汇编代码确定出具体的指令，拿伪代码做验证，这样就可以了。</p><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>先来总结今天遇到的汇编代码</p><table><thead><tr><th style="text-align:center">指令</th><th style="text-align:center">含义</th><th style="text-align:center">操作码</th></tr></thead><tbody><tr><td style="text-align:center">JMP $R</td><td style="text-align:center">跳转到$R给出的地址</td><td style="text-align:center">32</td></tr><tr><td style="text-align:center">JZ $R1,$R2,$R3</td><td style="text-align:center">如果$R1=$R2，跳转到R3给出的地址</td><td style="text-align:center">33</td></tr><tr><td style="text-align:center">JNZ $R1,$R2,$R3</td><td style="text-align:center">如果$R1!=$R2，跳转到R3给出的地址</td><td style="text-align:center">34</td></tr><tr><td style="text-align:center">JS $R1,$R2</td><td style="text-align:center">如果$R1&lt;0，跳转到R2给出的地址</td><td style="text-align:center">35</td></tr><tr><td style="text-align:center">JNS $R1,$R2</td><td style="text-align:center">如果$R1&gt;=0，跳转到R2给出的地址</td><td style="text-align:center">38</td></tr><tr><td style="text-align:center">JG $R1,$R2,$R3</td><td style="text-align:center">如果$R1&gt;$R2，跳转到R3给出的地址</td><td style="text-align:center">37</td></tr><tr><td style="text-align:center">JNG $R1,$R2,$R3</td><td style="text-align:center">如果$R1&lt;=$R2，跳转到R3给出的地址</td><td style="text-align:center">36</td></tr></tbody></table><p>JMP指令的实现很简单,把$IP寄存器的值修改为JMP指令的寄存器操作数里的数值就行了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">JMP:</span><br><span class="line">badAddress(R[RAM[R[$IP]+1]],R[$IP]);</span><br><span class="line">R[$IP]=R[RAM[R[$IP]+1]];</span><br><span class="line">JZ:</span><br><span class="line">if(R[RAM[R[$IP]+1]]==R[RAM[R[$IP]+2]])&#123;</span><br><span class="line">badAddress(R[RAM[R[$IP]+3]],R[$IP]);</span><br><span class="line">R[$IP]=R[RAM[R[$IP]+3]];</span><br><span class="line">&#125;</span><br><span class="line">else&#123;</span><br><span class="line">R[$IP]=R[$IP]+4;</span><br><span class="line">&#125;</span><br><span class="line">······</span><br></pre></td></tr></table></figure></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h2 id=&quot;sub-E90代码分析&quot;&gt;&lt;a href=&quot;#sub-E90代码分析&quot; class=&quot;headerlink&quot; title=&quot;sub_E90代码分析&quot;&gt;&lt;/a&gt;sub_E90代码分析&lt;/h2&gt;&lt;p&gt;继续分析接下来的switch分支情况&lt;br&gt;&lt;figure clas
-      
-    
-    </summary>
-    
-    
-      <category term="304反汇编测试" scheme="http://yoursite.com/tags/304%E5%8F%8D%E6%B1%87%E7%BC%96%E6%B5%8B%E8%AF%95/"/>
     
   </entry>
   
