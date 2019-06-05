@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-06-02T07:42:08.903Z</updated>
+  <updated>2019-06-05T13:04:20.057Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>软件安全分析概论</title>
+    <link href="http://yoursite.com/2019/06/05/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E6%A6%82%E8%AE%BA/"/>
+    <id>http://yoursite.com/2019/06/05/软件安全分析概论/</id>
+    <published>2019-06-05T12:29:31.000Z</published>
+    <updated>2019-06-05T13:04:20.057Z</updated>
+    
+    <content type="html"><![CDATA[<p>随着技术的发展，软件的应用越来越广泛，软件的功能也越来越复杂，而市场竞争等因素造成软件的开发周期越来越短，问题也将越来越多。如何对软件产品进行安全性分析，发现相关问题，剖析安全问题机理，进而研发设计相应的防御手段，是软件安全性分析的主要目标。</p><h2 id="典型的安全问题"><a href="#典型的安全问题" class="headerlink" title="典型的安全问题"></a>典型的安全问题</h2><p>当前软件安全问题可粗略分为3类</p><h3 id="恶意软件"><a href="#恶意软件" class="headerlink" title="恶意软件"></a>恶意软件</h3><p>恶意软件就是包含恶意功能的软件，随着信息技术的不断发展，恶意软件也在不断地升级，从最早的单机传播到网络传播再到协同攻击阶段，危害的程度与范围越来越大，而且极其隐蔽很难被发现。<br>近些年曝光的恶意软件，越来越多的是有组织研发，采用高技术手段，具有很强的渗透能力和生存能力，比如说RSA公司遭受SecurID窃取攻击和Hacking Team遭受APT攻击，这些都是非常闻名的公司，却依然遭到了攻击，并造成了严重的损失，所以说处理软件安全问题迫在眉睫。</p><h3 id="软件漏洞"><a href="#软件漏洞" class="headerlink" title="软件漏洞"></a>软件漏洞</h3><p>软件漏洞是指由于程序设计实现错误造成的软件问题，攻击者利用软件漏洞往往可以造成程序崩溃，获取敏感数据或执行任意代码。<br>经典的JPEG漏洞就是利用数据复制时出现的越界读写，经过一系列精心的构造，诱导程序执行shellcode。</p><h3 id="软件后门"><a href="#软件后门" class="headerlink" title="软件后门"></a>软件后门</h3><p>软件后门是由软件开发人员有意设计，刻意对用户隐瞒一些功能，往往这些功能用于软件产品应用之后的一些特殊目的。一些软件开发人员将软件后门设计为软件漏洞的形式，采取这种方法更难被发现，容易操作执行并且还很难被取证。</p><h2 id="软件安全性分析的目标"><a href="#软件安全性分析的目标" class="headerlink" title="软件安全性分析的目标"></a>软件安全性分析的目标</h2><p>软件安全性分析一般要回答以下三方面的问题<br>(1)存在问题<br>目标软件中是否存在恶意功能，是否存在漏洞或者后门。<br>(2)机理问题<br>确定问题存在后，进一步分析其具体是如何实现的或者是什么原因造成的。<br>(3)对策问题<br>根据相关机理分析结果，提出相应的防御对策。<br>现在许多软件常常都无法获得源代码，而在这种情况下进行软件的逆向分析就有几大难点：对于指令代码的理解，关联关系的抽取和复杂逻辑的解析等。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;随着技术的发展，软件的应用越来越广泛，软件的功能也越来越复杂，而市场竞争等因素造成软件的开发周期越来越短，问题也将越来越多。如何对软件产品进行安全性分析，发现相关问题，剖析安全问题机理，进而研发设计相应的防御手段，是软件安全性分析的主要目标。&lt;/p&gt;
+&lt;h2 id=&quot;典型的
+      
+    
+    </summary>
+    
+    
+      <category term="软件安全分析与应用" scheme="http://yoursite.com/tags/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E4%B8%8E%E5%BA%94%E7%94%A8/"/>
+    
+  </entry>
   
   <entry>
     <title>CSAPP 套接字接口(续)</title>
@@ -448,29 +472,6 @@
       
       
         &lt;h2 id=&quot;代码分析&quot;&gt;&lt;a href=&quot;#代码分析&quot; class=&quot;headerlink&quot; title=&quot;代码分析&quot;&gt;&lt;/a&gt;代码分析&lt;/h2&gt;&lt;p&gt;1.在汇编代码中，发现有很多[],[]表示是间接寻址，bx和[bx]的区别是，前者操作数就是bx中存放的数，后者操作数是以b
-      
-    
-    </summary>
-    
-    
-      <category term="304反汇编测试" scheme="http://yoursite.com/tags/304%E5%8F%8D%E6%B1%87%E7%BC%96%E6%B5%8B%E8%AF%95/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>304Challenge:代码分析4</title>
-    <link href="http://yoursite.com/2019/04/30/304Challenge-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%904/"/>
-    <id>http://yoursite.com/2019/04/30/304Challenge-代码分析4/</id>
-    <published>2019-04-30T12:35:11.000Z</published>
-    <updated>2019-05-24T13:19:03.092Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="sub-E90代码分析"><a href="#sub-E90代码分析" class="headerlink" title="sub_E90代码分析"></a>sub_E90代码分析</h2><p>今天分析到case 151、case 152卡了，没有做上匹配，先来说一下我的理解。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">.text:0000000000000EF3                 movzx   eax, word ptr [rbx+22h]</span><br><span class="line">.text:0000000000000EF7                 add     eax, 0FFFFFFFEh</span><br><span class="line">.text:0000000000000EFA                 mov     [rbx+22h], ax</span><br><span class="line">.text:0000000000000EFE                 movzx   edx, ax</span><br><span class="line">.text:0000000000000F01                 cmp     edx, 7FFDh</span><br><span class="line">.text:0000000000000F07                 jnb     loc_13CF</span><br><span class="line">.text:0000000000000F0D                 rol     di, 8</span><br><span class="line">.text:0000000000000F11                 mov     [rcx+rdx], di</span><br><span class="line">.text:0000000000000F15                 cmp     byte ptr [r15], 27h </span><br><span class="line">.text:0000000000000F19                 jnz     loc_139F</span><br><span class="line">.text:0000000000000F1F                 movzx   eax, word ptr [r15+2]</span><br><span class="line">.text:0000000000000F24                 rol     ax, 8</span><br><span class="line">.text:0000000000000F28                 add     [rbx+1Eh], ax</span><br><span class="line">.text:0000000000000F2C                 jmp     loc_EA6</span><br></pre></td></tr></table></figure></p><p>EAX和AX存在某种联系，EAX与AX不是独立的，EAX是32位的寄存器，而AX是EAX的低16位。<br>举例来说mov eax, FFFFFFFEh，那么AX将会是eax的低16位，也就是FFFEh。<br>而如果此时mov ax，3344h，那么eax的值将变为FFFF3344h，所以对ax的赋值是会影响eax的。<br>同样，AH是ax的高8位，而AL是ax的低8位，这就是说ah为33h，al为44h。<br>在EFE处，将ax的数据传送给edx，之后和7FFDh作比较，不低于7FFDh就直接退出了。接下来操作数和39比，不等于跳loc_139F，两种情况做的处理形式差不多。我猜想此功能是对操作数做一个if-else处理，但如果是这样的话就是一个复合的汇编指令了，或者是我没见过的汇编指令，还需要继续查资料。</p><h2 id="其他辅助解题的资料"><a href="#其他辅助解题的资料" class="headerlink" title="其他辅助解题的资料"></a>其他辅助解题的资料</h2><p><strong>虚拟寄存器</strong><br>VMRE共有40个寄存器，包括5个段寄存器、5个指针寄存器、10个通用寄存器、 10个双精度寄存器和10个单精度寄存器，如图I所示 。其中，段寄存器把地址空间划分成不同的地址段 ；指针寄存器用来记录指令地址和保存堆栈地址的，例如 ：IP是指令指针 ；SP是堆栈指针 ；BP是基址指针；通用数据寄存器是用来存储64位整型数的；双精度寄存器是用来存储64位双精度的浮点数；单精度寄存器是用来存储32位单精度的浮点数。<br><strong>虚拟内存的设计和管理</strong><br>在VMRE设计中，通过一个字符串指针来开辟一块连续的内存地址作为虚拟 内存空间，存储程序的字节码指令。由于在32位机器上无法提供这么多的物理内存，因此VMRE采用先预读后分配的原则来开辟 虚拟内存，即先对字节码文件的大小进行预读，根据其大小再从物理内存中分配足够的内存作为虚拟内存 ，如果剩余的物理内存无法满足需要 ，则退出该次分配。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h2 id=&quot;sub-E90代码分析&quot;&gt;&lt;a href=&quot;#sub-E90代码分析&quot; class=&quot;headerlink&quot; title=&quot;sub_E90代码分析&quot;&gt;&lt;/a&gt;sub_E90代码分析&lt;/h2&gt;&lt;p&gt;今天分析到case 151、case 152卡了，没有做上匹配，先来
       
     
     </summary>
