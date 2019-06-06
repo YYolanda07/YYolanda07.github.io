@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-06-05T13:04:20.057Z</updated>
+  <updated>2019-06-06T13:54:11.475Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>软件安全分析的主要方法</title>
+    <link href="http://yoursite.com/2019/06/06/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E7%9A%84%E4%B8%BB%E8%A6%81%E6%96%B9%E6%B3%95/"/>
+    <id>http://yoursite.com/2019/06/06/软件安全分析的主要方法/</id>
+    <published>2019-06-06T13:10:38.000Z</published>
+    <updated>2019-06-06T13:54:11.475Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="主要方法与技术"><a href="#主要方法与技术" class="headerlink" title="主要方法与技术"></a>主要方法与技术</h2><p>软件逆向分析并不是一种单项技术，其涉及的技术和方法很多。按照分析方式的不同，可以将软件逆向分析分为静态和动态两大类。静态分析主要是直接对软件的可执行代码进行分析；而动态分析是通过直接运行软件，然后监测软件运行过程，实施分析。在实际分析过程中，主流的思路是以动态分析为主，一方面利用模糊测试等技术构造执行的不同路径，另一方面也利用静态分析手段弥补动态分析过程中的不足，优化和提升动态分析的能力。</p><h3 id="反汇编与反编译"><a href="#反汇编与反编译" class="headerlink" title="反汇编与反编译"></a>反汇编与反编译</h3><p>反汇编与反编译是软件逆向分析的第一步，将完全不可读的二进制可执行程序转变为用户基本可读、功能等价的汇编代码或其他高级语言代码。</p><h3 id="程序调试"><a href="#程序调试" class="headerlink" title="程序调试"></a>程序调试</h3><p>程序调试是通过实际运行软件，利用断点、单步执行等方式对软件执行过程进行细粒度分析的过程。一般性的应用软件调试借助于WinDbg等就可实现，对于操作系统驱动程序等内核代码的调试较为复杂，需要借助于SoftICE或者VMware+WinDbg等调试工具。<br>与传统的静态分析方法相比，程序调试的优点在于它可避免用户对指令的复杂推理分析过程，可以直接对每条指令的执行结果进行分析。</p><h3 id="程序切片"><a href="#程序切片" class="headerlink" title="程序切片"></a>程序切片</h3><p>程序切片通过分析程序代码之间的依赖关系来分析指令的相关性，从而帮助用户提取其所感兴趣的代码片段。</p><h3 id="污点传播分析"><a href="#污点传播分析" class="headerlink" title="污点传播分析"></a>污点传播分析</h3><p>污点传播分析将所感兴趣的数据做标记，然后通过分析对该污点数据的处理过程，根据每条指令的污点传播规则，分析数据的传递关系。</p><h3 id="符号执行"><a href="#符号执行" class="headerlink" title="符号执行"></a>符号执行</h3><p>符号执行的基本思想是用符号变量作为输入参数，对程序进行模拟执行，然后对程序的执行路径进行分析，并提取路径中的约束条件，通过对约束进行求解实现对程序安全性及路径可达性等分析。</p><h3 id="模糊测试"><a href="#模糊测试" class="headerlink" title="模糊测试"></a>模糊测试</h3><p>模糊测试的基本思想是通过构造各种不同的输入参数，尽可能触发执行软件的各种路径，通过对执行结果的监测来实现相关的分析或检测目标。</p><h2 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h2><h3 id="恶意软件分析"><a href="#恶意软件分析" class="headerlink" title="恶意软件分析"></a>恶意软件分析</h3><p>恶意软件的分析过程是不可能依赖源代码的，因此，对恶意软件的分析只能依赖于软件逆向分析。</p><h3 id="网络协议逆向分析"><a href="#网络协议逆向分析" class="headerlink" title="网络协议逆向分析"></a>网络协议逆向分析</h3><p>当前网络空间中的绝大多数应用都要依赖于网络和网络协议，通过网络协议逆向分析可以提取出网络协议中数据包格式、关键字、协议状态机等信息，从而对僵尸网络设计抑制机制。</p><h3 id="软件漏洞分析与利用"><a href="#软件漏洞分析与利用" class="headerlink" title="软件漏洞分析与利用"></a>软件漏洞分析与利用</h3><p>对于软件漏洞的发现方式有多种，比如模糊测试、预先筛选可疑代码等。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;主要方法与技术&quot;&gt;&lt;a href=&quot;#主要方法与技术&quot; class=&quot;headerlink&quot; title=&quot;主要方法与技术&quot;&gt;&lt;/a&gt;主要方法与技术&lt;/h2&gt;&lt;p&gt;软件逆向分析并不是一种单项技术，其涉及的技术和方法很多。按照分析方式的不同，可以将软件逆向分析分为静
+      
+    
+    </summary>
+    
+    
+      <category term="软件安全分析与应用" scheme="http://yoursite.com/tags/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E4%B8%8E%E5%BA%94%E7%94%A8/"/>
+    
+  </entry>
   
   <entry>
     <title>软件安全分析概论</title>
@@ -455,29 +478,6 @@
       <category term="304反汇编测试" scheme="http://yoursite.com/tags/304%E5%8F%8D%E6%B1%87%E7%BC%96%E6%B5%8B%E8%AF%95/"/>
     
       <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>304Challenge:代码分析5</title>
-    <link href="http://yoursite.com/2019/05/02/304Challenge-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%905/"/>
-    <id>http://yoursite.com/2019/05/02/304Challenge-代码分析5/</id>
-    <published>2019-05-02T11:38:35.000Z</published>
-    <updated>2019-05-24T13:19:13.807Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2><p>1.在汇编代码中，发现有很多[],[]表示是间接寻址，bx和[bx]的区别是，前者操作数就是bx中存放的数，后者操作数是以bx中存放的数为地址的单元中的数。<br>比如：mov ax,[bx]<br>bx中存放的数是40F6H，40F6H、40F7H两个单元中存放的数是22H、23H，则<br>mov ax,[bx]；2322H传送到ax中<br>mov ax,bx；40F6H传送到ax中</p><p>2.movzx指令一般用于将较小值拷贝到较大值中，其实就是将我们的源操作数取出来,然后置于目的操作数,目的操作数其余位用0填充。<br>比如eax=00304000h<br>若执行 movzx eax, ax后 eax = 00004000h.<br>若执行 movzx eax, ah后 eax = 00000040h.</p><p>3.SI（Source Index）：源变址寄存器可用来存放相对于DS段之源变址指针；<br>DI（Destination Index）：目的变址寄存器，可用来存放相对于 ES 段之目的变址指针。<br>ROL DEST，COUNT<br>把目的地址中的数据循环左移COUNT次，每次从最高位（最左）移出的数据位都补充到最低位（最右），最后从最高位（最左）移出的数据位保存到CF标志位。</p><p>4.寄存器<br>8086处理器中的寄存器分为8组，每组宽度为32位<br>通用寄存器、段寄存器、指令寄存器、标志寄存器、系统地址寄存器、控制寄存器、调试寄存器、测试寄存器<br>通用寄存器：<br>    EAX 累加器 在乘法和除法指令中被自动使用<br>    EBX 基址寄存器<br>    ECX 计数器 循环计数器<br>    EDX 数据寄存器<br>    ESI 源变址寄存器<br>    EDI 目的变址寄存器<br>    EBP 扩展基址指针寄存器 由高级语言用来引用函数参数和局部变量<br>    ESP 栈指针寄存器<br>EAX EBX ECX EDX ESI EDI EBP ESP #32位<br>AX BX CX DX SI DI BP SP #低16位<br>AH BH CH DH #高8位<br>AL BL CL DL #低8位</p><p>段寄存器：<br>   CS：代码段(Code Segment)<br>   DS：数据段(Data Segment)<br>   ES：附加数据段(Extra Segment)<br>   SS：堆栈段(Stack Segment)<br>   FS：附加段<br>   GS 附加段</p><p>指令寄存器：<br>EIP 指令指针寄存器，低16位为IP（8086），它存储的是下一条要执行指令的地址。</p><p>标志寄存器：<br>    IOPL(I/O Privilege Level) I/O特权级字段，它的宽度为2bit,它指定了I/O指令的特权级。如果当前的特权级别在数值上小于或等于IOPL，那么I/O指令可执行。否则，将发生一个保护性异常。<br>    NT(Nested Task): 控制中断返回指令IRET,它宽度为1位。NT=0,用堆栈中保存的值恢复EFLAGS，CS和EIP从而实现中断返回；NT=1，则通过任务切换实现中断返回。<br>    RF(Restart Flag): 重启标志，它的宽度是1位。它主要控制是否接受调试故障。RF=0接受，RF=1忽略。如果你的程序每一条指令都被成功执行，那么RF会被清0。而当接受到一个非调试故障时，处理器置RF=1。<br>    VM(Virtual Machine): 虚拟8086模式(用软件来模拟8086的模式，所以也称虚拟机)。VM=0,处理器工作在一般的保护模式下；VM=1，工作在V8086模式下。<br>    其它16个标志位的含义和8086一样：<br>    CF(Carry Flag): 进位标志位，由CLC，STC两标志位来控制，在无符号算数运算的结果无法容纳于目的操作数中时被设置<br>    PF(Parity Flag): 奇偶标志位<br>    AF(Assistant Flag): 辅助进位标志位<br>    ZF(Zero Flag): 零标志位<br>    SF(Singal Flag): 符号标志位<br>    IF(Interrupt Flag): 中断允许标志位,由CLI，STI两条指令来控制<br>    DF(Direction Flag): 向量标志位，由CLD，STD两条指令来控制<br>    OF(Overflow Flag): 溢出标志位</p><p>PSW（Program Flag)程序状态字寄存器，是一个16位寄存器，由条件码标志（flag）和控制标志构成<br>    OF（Overflow Flag)溢出标志。溢出时为1,否则置0<br>    SF（Sign Flag）符号标志。结果为负时置1,否则置0<br>    ZF（Zero Flag)零标志，运算结果为0时ZF位置1,否则置0<br>    CF（Carry Flag)进位标志，进位时置1,否则置0<br>    AF（Auxiliary carry Flag）辅助进位标志，记录运算时第3位（半个字节）产生的进位置。有进位时1,否则置0<br>    PF（Parity Flag）奇偶标志。结果操作数中1的个数为偶数时置1,否则置0<br>    DF（Direction Flag）方向标志，在串处理指令中控制信息的方向<br>    IF（Interrupt Flag）中断标志<br>    TF（Trap Flag）陷井标志</p><h2 id="深入理解计算机系统"><a href="#深入理解计算机系统" class="headerlink" title="深入理解计算机系统"></a>深入理解计算机系统</h2><p>今天读了《深入理解计算机系统》第1章部分，通过一个hello程序执行过程来进行对计算机系统的学习。<br><strong>hello程序的生命周期</strong><br>源程序hello.c-&gt;(预处理器)-&gt;修改的源程序hello.i-&gt;(编译器)-&gt;汇编程序hello.s-&gt;(汇编器)-&gt;可重定位目标程序hello.o+printf.o-&gt;(链接器)-&gt;可执行目标程序hello<br>printf函数存放于printf.o中，它是每个C编译器都会提供的标准库中的一个函数。<br>通过这样一个简单的程序来了解编译系统是如何工作的，理解编译系统是大有益处的，它可以帮助我们优化程序性能、理解链接时出现的错误、避免安全漏洞。<br><strong>计算机系统的硬件组成</strong><br>总线：携带信息字节并负责在各个部件间传递。<br>I/O设备：系统与外部世界连接的通道，比如鼠标、键盘、磁盘都属于输入输出设备。<br>主存：在处理器执行程序时，用来存放程序和程序处理的数据。<br>处理器：解释执行存储在主存中指令的引擎。<br>随着近些年半导体技术的发展，加快处理器的运行速度比加快主存的运行速度要容易和便宜的多，处理器和主存之间的差距不断增大，为了减少这种差异所带来的影响，加入了一种高速缓存机制。高速缓冲存储器是存在于主存与CPU之间的一级存储器， 由静态存储芯片(SRAM)组成，容量比较小但速度比主存高得多，接近于CPU的速度。由局部性原理可以知道，在CPU访问存储器时，无论是存取指令还是存取数据，所访问的存储单元都趋于聚集在一个较小的连续区域中。通过让高速缓存里存放可能经常访问的数据的方法，可以大幅度提高提升程序执行的速度。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h2 id=&quot;代码分析&quot;&gt;&lt;a href=&quot;#代码分析&quot; class=&quot;headerlink&quot; title=&quot;代码分析&quot;&gt;&lt;/a&gt;代码分析&lt;/h2&gt;&lt;p&gt;1.在汇编代码中，发现有很多[],[]表示是间接寻址，bx和[bx]的区别是，前者操作数就是bx中存放的数，后者操作数是以b
-      
-    
-    </summary>
-    
-    
-      <category term="304反汇编测试" scheme="http://yoursite.com/tags/304%E5%8F%8D%E6%B1%87%E7%BC%96%E6%B5%8B%E8%AF%95/"/>
     
   </entry>
   
