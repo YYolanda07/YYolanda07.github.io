@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-06-14T06:09:55.652Z</updated>
+  <updated>2019-06-17T09:57:06.651Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>动态分析工具</title>
+    <link href="http://yoursite.com/2019/06/17/%E5%8A%A8%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/"/>
+    <id>http://yoursite.com/2019/06/17/动态分析工具/</id>
+    <published>2019-06-17T09:08:18.000Z</published>
+    <updated>2019-06-17T09:57:06.651Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="动态分析工具"><a href="#动态分析工具" class="headerlink" title="动态分析工具"></a>动态分析工具</h2><p>动态分析是指在可控环境中运行软件程序或者模拟软件执行的情况下，利用分析工具，监控代码的所有操作，观察代码执行流程及状态，获取执行过程中的各种数据。</p><h3 id="Process-Moniter"><a href="#Process-Moniter" class="headerlink" title="Process Moniter"></a>Process Moniter</h3><p>Process Monitor是一款系统进程监视软件，总体来说，Process Monitor相当于Filemon+Regmon，其中的Filemon专门用来监视系统 中的任何文件操作过程，而Regmon用来监视注册表的读写操作过程。有了Process Monitor，使用者就可以对系统中的任何文件和注册表操作同时进行监视和记录，通过注册表和文件读写的变化， 对于帮助诊断系统故障或是发现恶意软件、病毒或木马来说，非常有用。 </p><h3 id="Wireshark"><a href="#Wireshark" class="headerlink" title="Wireshark"></a>Wireshark</h3><p>Wireshark是世界上最流行的网络分析工具。这个强大的工具可以捕捉网络中的数据，并为用户提供关于网络和上层协议的各种信息。与很多其他网络工具一样，Wireshark也使用pcap network library来进行封包捕捉。可破解局域网内QQ、邮箱、msn、账号等的密码。</p><h3 id="OllyDbg"><a href="#OllyDbg" class="headerlink" title="OllyDbg"></a>OllyDbg</h3><p>OllyDbg是一款Windows平台反汇编动态调试追踪工具，只支持Ring3级别的用户态程序。OllyDbg主要应用在应用软件调试领域，在调试过程中能够提供指令、内存、寄存器、栈等基本信息。除此之外还支持Trace功能，通过Trace功能可以记录调试过程中执行的指令，用于分析前序执行指令。</p><h3 id="WinDbg"><a href="#WinDbg" class="headerlink" title="WinDbg"></a>WinDbg</h3><p>Windbg是在windows平台下，强大的用户态和内核态调试工具。相比较于Visual Studio，它是一个轻量级的调试工具，所谓轻量级指的是它的安装文件大小较小，但是其调试功能，却比VS更为强大。它的另外一个用途是可以用来分析dump数据。</p><h4 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h4><p>查看版本信息：version、vertarget<br>查看模块信息：lm、!dlls、!lmvi等<br>调用栈：用k命令显示调用栈，用.frames命令切换栈帧<br>内存操作：读内存用d命令，写内存用e命令<br>自动分析：!analyze、!owner等<br>符号命令：.reload加载符号, .sympath设置符号路径, !sym设置符号选项<br>进程线程：!process显示进程信息； .process显示当前进程，或用.process /i 切换当前进程；!peb显示进程环境块内容；~命令显示线程列表，用~n s可切换当前线程，n表示线程号；.thread显示当前线程。</p><h3 id="Pin"><a href="#Pin" class="headerlink" title="Pin"></a>Pin</h3><p>Pin是一种动态二进制检测框架，适用于x86,x64架构，一般用于程序动态分析用，在多个平台上都支持。该工具原本适用于计算机架构分析用的，但是由于丰富的api，与强大的功能现在运用的地方很多。比如计算机安全，环境模拟器，并行计算。</p><h4 id="代码插桩模式"><a href="#代码插桩模式" class="headerlink" title="代码插桩模式"></a>代码插桩模式</h4><p><strong>INS级别：</strong>即在每一条原始程序指令前，后插入自己的代码<br><strong>TRACE级别：</strong>在指令跳转时进行插入，进一步进行基本块的分析<br><strong>RTN级别：</strong>通过符号表信息找到需要插入的位置<br><strong>IMG级别：</strong>用于监控模块的装载和卸载</p><h2 id="虚拟化辅助分析平台"><a href="#虚拟化辅助分析平台" class="headerlink" title="虚拟化辅助分析平台"></a>虚拟化辅助分析平台</h2><h3 id="VMWare-Workstation"><a href="#VMWare-Workstation" class="headerlink" title="VMWare Workstation"></a>VMWare Workstation</h3><p>VMWare Workstation是一款功能强大的桌面虚拟计算机软件，提供用户可在单一的桌面上同时运行不同的操作系统，和进行开发、测试 、部署新的应用程序的最佳解决方案。VMware Workstation可在一部实体机器上模拟完整的网络环境，以及可便于携带的虚拟机器，其更好的灵活性与先进的技术胜过了市面上其他的虚拟计算机软件。<br>VMware Workstation允许操作系统和应用程序在一台虚拟机内部运行。虚拟机是独立运行主机操作系统的离散环境。在 VMware Workstation 中，你可以在一个窗口中加载一台虚拟机，它可以运行自己的操作系统和应用程序。你可以在运行于桌面上的多台虚拟机之间切换，通过一个网络共享虚拟机(例如一个公司局域网)，挂起和恢复虚拟机以及退出虚拟机，这一切不会影响你的主机操作和任何操作系统或者其它正在运行的应用程序。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;动态分析工具&quot;&gt;&lt;a href=&quot;#动态分析工具&quot; class=&quot;headerlink&quot; title=&quot;动态分析工具&quot;&gt;&lt;/a&gt;动态分析工具&lt;/h2&gt;&lt;p&gt;动态分析是指在可控环境中运行软件程序或者模拟软件执行的情况下，利用分析工具，监控代码的所有操作，观察代码执行
+      
+    
+    </summary>
+    
+    
+      <category term="软件安全分析与应用" scheme="http://yoursite.com/tags/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E4%B8%8E%E5%BA%94%E7%94%A8/"/>
+    
+  </entry>
   
   <entry>
     <title>静态分析工具</title>
@@ -446,29 +469,6 @@
       
       
         &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;h3 id=&quot;浮点数&quot;&gt;&lt;a href=&quot;#浮点数&quot; class=&quot;headerlink&quot; title=
-      
-    
-    </summary>
-    
-    
-      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>CSAPP整数的运算</title>
-    <link href="http://yoursite.com/2019/05/07/CSAPP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B05-7/"/>
-    <id>http://yoursite.com/2019/05/07/CSAPP学习笔记5-7/</id>
-    <published>2019-05-07T07:41:26.000Z</published>
-    <updated>2019-05-19T04:54:40.000Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="计算机系统学习"><a href="#计算机系统学习" class="headerlink" title="计算机系统学习"></a>计算机系统学习</h2><h3 id="整数的运算"><a href="#整数的运算" class="headerlink" title="整数的运算"></a>整数的运算</h3><p>平时的编程过程中，当进行整数运算时，经常会遇到一些奇怪的结果，比如两个正数加出负数，两个负数可以加出一个正数，这些都是由于数值表示的有限性导致的。<br><strong>无符号的加法</strong><br>二进制整数的加法与我们平时的十进制算法有一个最大的区别，那就是我们在计算机当中进行计算时，结果的位数都是有限制的。因此在我们计算过后，可能需要对结果进行截断操作。如果结果用超出规定的位才能表示，就算是溢出。所以来说无符号的加法只要不溢出就可以按照正常的加法来算，但如果出现溢出就需要减2^w。<br><strong>补码的加法</strong><br>对于补码加法就是可以先按照无符号加法进行运算，然后再进行无符号和有符号的转换。<br>与无符号加法不同的是，补码的加法会出现三种结果，一种是正常的结果，一种是正溢出，一种是负溢出。对于当正溢出的时候，我们的结果与无符号数类似，相加后的结果减去2^w。而当负溢出的时候，则刚好相反，相加后的结果加上2^w。<br><strong>补码的非</strong><br>先明白一个概念，对于任意一个w位的补码数t来说，它都有唯一的逆元t^-1，使得t + t^-1 = 0。<br>一个w位的补码数的范围在-2^(w-1）到2^(w-1)之间，直观的可以看出，对于不等于-2^(w-1)的补码数x来说，它的逆元就是-x。而对于-2^(w-1)来说，它的二进制位表示为1后面跟着w-1个0，我们需要找到一个数与其相加之后结果为0。这种时候我们需要考虑的是，如果是-x，也就是2^(w-1)，则它的位表示需要w+1位，是不存在的。因此我们需要考虑溢出的情况,负溢出的时候需要加上2^w，因此-2w-1的逆元就是-2^w + 2^(w-1) = -2^(w-1)，也就是它本身。<br><strong>无符号乘法</strong><br>无符号的乘法与加法类似，它的运算方式是比较简单的，只是也可能产生溢出。对于两个w位的无符号数来说，它们的乘积范围在0到(2^w-1)^2之间，因此可能需要2w位二进制才能表示。因此由于位数的限制，假设两个w位的无符号数的真实乘积为result，根据截断的规则，则实际得到的乘积为 result mod 2^w。<br><strong>补码乘法</strong><br>与加法运算类似，补码乘法也是建立在无符号的基础之上的，因此我们可以很容易的得到，对于两个w位的补码数来说，假设它们的真实乘积为result，则实际得到的乘积为 U2Tw(result mod 2^w)。<br><strong>乘以常数</strong><br>对于一个w位的二进制数来说，它与2^k的乘积，等同于这个二进制数左移k位，在低位补k个0。<br><strong>除以2的幂</strong><br>1.除以2的幂的无符号除法：对于一个w位的二进制数来说，它除以2^k，等同于这个二进制数右移k位，在高位补k个0。<br>2.除以2的幂的补码除法：对于一个w位的非负数的二进制数来说，它除以2^k，等同于这个二进制数右移k位，在高位补k个1；而对于一个w位的负数的二进制数来说，它除以2^k，要先加上2^k-1,然后再右移k位，在高位补k个1。</p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>计算机执行整数运算实际上是一种模运算形式，由于数字长度的限制，就会出现溢出的现象，这样就会导致程序运行错误，也会出现许多漏洞，比如在分配地址空间时，发生了正溢出，得到的结果比我们预想的小得多，这样就会导致分配的地址空间变小，而对这些空间进行某些操作时，会破坏超出这些地址空间的数据。</p><h2 id="地址传送指令"><a href="#地址传送指令" class="headerlink" title="地址传送指令"></a>地址传送指令</h2><table><thead><tr><th style="text-align:center">指令格式</th><th style="text-align:center">名称</th><th style="text-align:center">功能</th></tr></thead><tbody><tr><td style="text-align:center">lea r16,mem</td><td style="text-align:center">有效地址传送指令</td><td style="text-align:center">r16&lt;-mem的有效地址</td></tr><tr><td style="text-align:center">lds r16,mem</td><td style="text-align:center">指针传送指令</td><td style="text-align:center">r16&lt;-mem，DS&lt;-mem+2</td></tr><tr><td style="text-align:center">les r16,mem</td><td style="text-align:center">指针传送指令</td><td style="text-align:center">r16&lt;-mem,ES&lt;-mem+2</td></tr></tbody></table><p>LEA指令将存储器操作数mem的4位16进制偏移地址送到指定的寄存器。这里，源操作数必须是存储器操作数，目标操作数必须是16位通用寄存器。对于LEA指令来说变量其后面的有无[]皆可，都表示取变量地址，相当于指针；寄存器无[]表示取地址，有[]表示取值。<br>lds和les的操作过程差不多，r16是一个16位寄存器,mem是一个存储器操作数,为双字项,高16位送入DS/ES,低16位送入r16.</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;h3 id=&quot;整数的运算&quot;&gt;&lt;a href=&quot;#整数的运算&quot; class=&quot;headerlink&quot; ti
       
     
     </summary>
