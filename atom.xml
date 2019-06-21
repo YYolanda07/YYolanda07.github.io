@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-06-20T05:16:26.666Z</updated>
+  <updated>2019-06-21T13:12:37.955Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>程序切片方法</title>
+    <link href="http://yoursite.com/2019/06/21/%E7%A8%8B%E5%BA%8F%E5%88%87%E7%89%87%E6%96%B9%E6%B3%95/"/>
+    <id>http://yoursite.com/2019/06/21/程序切片方法/</id>
+    <published>2019-06-21T12:26:49.000Z</published>
+    <updated>2019-06-21T13:12:37.955Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="程序切片"><a href="#程序切片" class="headerlink" title="程序切片"></a>程序切片</h2><h3 id="切片的基一般过程"><a href="#切片的基一般过程" class="headerlink" title="切片的基一般过程"></a>切片的基一般过程</h3><p>1.程序依赖关系提取<br>程序依赖关系提取主要是从程序中提取各类信息，包括控制流和数据流信息，形成程序依赖图。<br>2.切片规则制定<br>依据具体的程序分析需求设计切片准则<br>3.切片生成<br>依据前述的切片准则选择相应的程序切片方法，然后对第一步中提取的依赖关系进行分析处理，从而生成程序切片。</p><h2 id="静态程序切片"><a href="#静态程序切片" class="headerlink" title="静态程序切片"></a>静态程序切片</h2><p>静态切片技术是指在计算程序切片时 使用的是静态的数据流和控制流分析方法。该技术对程序的输入不做任何假设，所 做的分析完全以程序的静态信息为依据。使用该技术的工作量较大，因为要分析程 序所有可能的执行轨迹，所以相对于动态切片技术，静态切片技术一般用于程序理解与软件维护方面。</p><h3 id="基于数据流方程的切片方法"><a href="#基于数据流方程的切片方法" class="headerlink" title="基于数据流方程的切片方法"></a>基于数据流方程的切片方法</h3><p>基于数据流方程进行切片的方法主要是通过迭代计算控制流图中的每个节点的相关变量集合，迭代分析语句间的数据依赖关系和控制依赖关系，最终获得每条语句中与切片准则C相关的变量的集合。<br>Mark Weiser数据流切片算法是基于数据流方程的切片方法中的经典算法。</p><h3 id="基于图可达性的切片方法"><a href="#基于图可达性的切片方法" class="headerlink" title="基于图可达性的切片方法"></a>基于图可达性的切片方法</h3><p>首先需要计算出目标程序的控制依赖关系和数据依赖关系，构建程序依赖图。然后从切片准则所对应的节点出发沿着数据依赖边和控制依赖边进行图遍历，所有遍历可达的节点都加入到切片中。</p><h2 id="动态程序切片"><a href="#动态程序切片" class="headerlink" title="动态程序切片"></a>动态程序切片</h2><p>动态切片技术使用的是动态的数据流和控制流分析方法，因此切片的计算过程 依赖于程序的具体输入。采用这一技术，每一次的计算工作量较小，但每一次的计算 都不尽相同，因此动态切片技术多用于程序调试、测试方面。</p><h3 id="基于程序依赖图的动态切片方法"><a href="#基于程序依赖图的动态切片方法" class="headerlink" title="基于程序依赖图的动态切片方法"></a>基于程序依赖图的动态切片方法</h3><p>1.构造程序依赖图<br>2.依据切片准则的数据I0得到程序动态执行历史。<br>3.在程序依赖图中删除在执行历史中不存在的节点。<br>4.对于当前依赖图中剩余节点之间的每一条边，如果这条边对应的控制和数据依赖关系并没有在执行历史中出现，则将这条边删除。<br>5.从切片准则对应的节点开始进行图的遍历，将所有可达的节点加入到切片中。</p><h3 id="基于动态依赖图的动态切片方法"><a href="#基于动态依赖图的动态切片方法" class="headerlink" title="基于动态依赖图的动态切片方法"></a>基于动态依赖图的动态切片方法</h3><p>动态依赖图不但能够表示静态程序依赖关系，同时也能表示程序的动态执行过程。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;程序切片&quot;&gt;&lt;a href=&quot;#程序切片&quot; class=&quot;headerlink&quot; title=&quot;程序切片&quot;&gt;&lt;/a&gt;程序切片&lt;/h2&gt;&lt;h3 id=&quot;切片的基一般过程&quot;&gt;&lt;a href=&quot;#切片的基一般过程&quot; class=&quot;headerlink&quot; title=&quot;切
+      
+    
+    </summary>
+    
+    
+      <category term="软件安全分析与应用" scheme="http://yoursite.com/tags/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E4%B8%8E%E5%BA%94%E7%94%A8/"/>
+    
+  </entry>
   
   <entry>
     <title>虚拟化平台&amp;程序切片</title>
@@ -446,29 +469,6 @@
       
       
         &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;h3 id=&quot;条件码寄存器&quot;&gt;&lt;a href=&quot;#条件码寄存器&quot; class=&quot;headerlink&quot; 
-      
-    
-    </summary>
-    
-    
-      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>CSAPP汇编指令1</title>
-    <link href="http://yoursite.com/2019/05/10/CSAPP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B05-9-5-10/"/>
-    <id>http://yoursite.com/2019/05/10/CSAPP学习笔记5-9-5-10/</id>
-    <published>2019-05-10T09:47:38.000Z</published>
-    <updated>2019-05-19T04:50:24.000Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="计算机系统学习"><a href="#计算机系统学习" class="headerlink" title="计算机系统学习"></a>计算机系统学习</h2><p>开始学习第三章程序的机器级表示，我竟然惊喜地发现这一章的内容正是我想学习但一直没找到汇总很好的学习资源。这两天主要在学习关于汇编指令的基础知识。</p><h3 id="为什么要学习汇编"><a href="#为什么要学习汇编" class="headerlink" title="为什么要学习汇编"></a>为什么要学习汇编</h3><p>有的人说，汇编语言的可读性和可移植性都很差，高级语言很容易理解、兼容性很好。为什么要学汇编语言而不是高级语言？<br>因为想要真正了解计算机系统，了解计算机是如何工作的，想要做一些漏洞分析，汇编语言都是必不可少的。</p><h3 id="生成汇编代码"><a href="#生成汇编代码" class="headerlink" title="生成汇编代码"></a>生成汇编代码</h3><p>一般生成汇编代码有两种途径，一种是从高级语言生成汇编代码，这时可以借助gcc编译器，比如在Linux环境下，使用命令</p><pre><code>&gt; gcc -Og -S xx.c</code></pre><p>就可以看到C语言编译器产生的汇编代码了；而另一种是对可执行程序反汇编生成汇编代码，在Linux上一般使用objdump工具，敲命令行</p><pre><code>&gt; objdump -d xx.o</code></pre><h3 id="汇编指令概述"><a href="#汇编指令概述" class="headerlink" title="汇编指令概述"></a>汇编指令概述</h3><p><strong>汇编代码格式</strong><br>汇编代码格式有两种，分别是是ATT和Intel格式，关于这两种汇编格式，在我之前的博客中做过总结。本书中用到的都是ATT格式的汇编代码。<br><strong>数据格式</strong><br><img src="https://tva1.sinaimg.cn/large/007rAy9hgy1g2we1z27mxj30hb073t9b.jpg" alt><br><strong>寄存器</strong><br>寄存器是CPU当中非常重要的对象，一般情况下，很多临时变量都会存储在这里.下面是一张书中的寄存器图示，它基于IA32架构给出。<br><img src="https://tva1.sinaimg.cn/large/007rAy9hgy1g2we40o0vzj30do0aodge.jpg" alt><br><strong>操作数指令符</strong><br>不同指令符的表示方式一共有三种，一种是$符号后跟一个标准C表示的整数，比如$100，$0x11等等。第二种则是寄存器，当它作为一个操作数的时候，则是取的寄存器当中的数值。另外，对于寄存器来说，也可以选择性的操作4个、2个、1个字节，而并不一定非要操作4个字节。最后一种，则是我们相对来说最熟悉的，就是存储器或者说内存。当它作为一个操作数的时候，会去计算存储器地址的数值，然后去这个地址取相应的数值。</p><h3 id="数据传送指令"><a href="#数据传送指令" class="headerlink" title="数据传送指令"></a>数据传送指令</h3><p>数据传送指令的目的是为了将一个数据从一个位置复制到另外一个位置。既然如此，那么数据传送指令就会包含一个源操作数和一个目的操作数，指令会将原操作数的值复制到目的操作数并覆盖。<br>数据传送指令一共可分为五种，分别是mov、movs、movz、push以及pop。这几种指令之前也分别做过总结，通过学习本节更系统地了解这些指令，算是复习了一遍吧。</p><h3 id="算术与逻辑运算操作指令"><a href="#算术与逻辑运算操作指令" class="headerlink" title="算术与逻辑运算操作指令"></a>算术与逻辑运算操作指令</h3><p>算术与逻辑运算包括很多种，比如最常见的加减乘除、与或非、左移右移等等。基本的加减乘除，位操作都比较基础了，这里就不再多说。通过本书我还学到了一个很精妙的指令，就是取地址运算符leaq。<br>leaq指令是非常神奇的一个指令，它可以取一个存储器操作数的地址，并且将其赋给目的操作数。如果用C语言当中来对应的话，它就相当于&amp;运算。<br>比如对于leaq 4(%rdx,%rdx,4),%rax这条指令来讲，我们假设%rdx寄存器的值为x的话，那么这条指令的作用就是将 4 + x + 4x = 5x + 4赋给%rax寄存器。它和mov指令的区别就在于，假设是movq 4(%rdx,%rdx,4),%rax这个指令，它的作用是将内存地址为5x+4的内存区域的值赋给%rax寄存器，而leaq指令只是将5x+4这个地址赋给目的操作数%rax而已，它并不对存储器进行引用的值的计算。<br>leaq指令能执行加法和有限形式的乘法，在编译一些比较复杂的算术表达式，使用leaq指令就会变得很简单，能有效减少程序的大小，提高代码执行效率。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;p&gt;开始学习第三章程序的机器级表示，我竟然惊喜地发现这一章的内容正是我想学习但一直没找到汇总很好的学习资
       
     
     </summary>
