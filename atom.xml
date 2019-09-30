@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-09-15T12:44:03.742Z</updated>
+  <updated>2019-09-30T08:39:58.086Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>2019年9月半月小结(下)</title>
+    <link href="http://yoursite.com/2019/09/30/2019%E5%B9%B49%E6%9C%88%E5%8D%8A%E6%9C%88%E5%B0%8F%E7%BB%93-%E4%B8%8B/"/>
+    <id>http://yoursite.com/2019/09/30/2019年9月半月小结-下/</id>
+    <published>2019-09-30T08:38:42.000Z</published>
+    <updated>2019-09-30T08:39:58.086Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="20190915-20190930"><a href="#20190915-20190930" class="headerlink" title="20190915-20190930"></a>20190915-20190930</h1><h2 id="吴恩达机器学习公开课"><a href="#吴恩达机器学习公开课" class="headerlink" title="吴恩达机器学习公开课"></a>吴恩达机器学习公开课</h2><p>这段时间公开课看到第六章，初识机器学习，对机器学习的概念有了初步的掌握，机器学习分为监督学习和非监督学习。了解梯度下降算法，以梯度下降算法为基础的单变量线性回归算法和多元线性回归算法，根据不同的数据，观察并计算出最合适的函数。公开课还对Octave的基本操作，如输入输出，矩阵计算，文件加载等一些语法进行了讲解以及实际操作。</p><h2 id="区块链"><a href="#区块链" class="headerlink" title="区块链"></a>区块链</h2><h3 id="中本聪《bitcoin-A-peer-to-peer-electronic-cash-system》"><a href="#中本聪《bitcoin-A-peer-to-peer-electronic-cash-system》" class="headerlink" title="中本聪《bitcoin:A peer to peer electronic cash system》"></a>中本聪《bitcoin:A peer to peer electronic cash system》</h3><p>这是中本聪在2008年发表的论文，第一次提出比特币的概念，全文重点讨论比特币系统，给出对比特币的完整构想。依次介绍了比特币最重要的概念，包括交易、时间戳服务器、工作量证明、网络传播、激励、回收硬盘空间、简化的支付验证、合并和分割交易额、隐私，最后通过概率论证明双重支付难以发生。区块链在此文中被描述为用于记录比特币交易的账目历史。</p><h3 id="《区块链技术指南》"><a href="#《区块链技术指南》" class="headerlink" title="《区块链技术指南》"></a>《区块链技术指南》</h3><p>这本书讲述区块链的来龙去脉。包括区块链的概念，为何会出现，使用场景、区块链的核心技术，介绍比特币、以太坊、超级账本这三大落地项目的架构设计。之后介绍了几个使用区块链的典型的应用场景，列出区块链技术在未来发展中的关键技术的重点难点。</p><h3 id="区块链共识机制"><a href="#区块链共识机制" class="headerlink" title="区块链共识机制"></a>区块链共识机制</h3><h4 id="The-DAO攻击事件"><a href="#The-DAO攻击事件" class="headerlink" title="The DAO攻击事件"></a>The DAO攻击事件</h4><p>The DAO事件是区块链历史上的著名事件，由于智能合约的漏洞造成资金被黑客转移，这个事件的发生使人们开始逐渐认识到区块链项目的安全问题很重要。</p><h4 id="共识"><a href="#共识" class="headerlink" title="共识"></a>共识</h4><p>在区块链世界里，达成共识非常简单：最长的那条链代表了真理，所有人都就接受；其他分支都是分叉，都会被遗忘。区块链是比特币背后的核心技术，也是支撑比特币的基础架构。比特币最核心的突破是在去中心化的情况下对交易事件达成了共识，即在没有中心组织的情况下对某个交易的有效性达成了一致。<br>比特币实现共识的方法主要包括两个部分：<br>(1)激励：即通过每个区块产生一定量的新比特币来激励参与者；<br>(2)引入外部资源确保安全：即通过大量的外部计算来确保共识的安全性，也就是工作量证明。</p><h4 id="共识算法"><a href="#共识算法" class="headerlink" title="共识算法"></a>共识算法</h4><p><strong>PoW工作证明</strong><br>比特币在Block的生成过程中使用了PoW机制，一个符合要求的Block Hash由N个前导零构成，零的个数取决于网络的难度值。<br><strong>PoS股权证明</strong><br>类似财产储存在银行，这种模式会根据你持有数字货币的量和时间，分配给你相应的利息。<br><strong>DPoS委任权益证明</strong><br>让每个持有比特股的人进行投票，由此产生101位代表，可以将其理解为101个超级节点或者矿池，而这101个超级节点彼此的权力是完全相等的<br><strong>PBFT使用拜占庭容错算法</strong><br>服务作为状态机进行建模，状态机在分布式系统的不同节点进行副本复制。每个状态机的副本都保存了服务的状态，同时也实现了服务的操作。拜占庭算法的核心在于少数人m服从于多数人3m+1这个策略，拓展延伸到这里就是。将所有的副本组成的集合使用大写字母R表示，使用0到|R|-1的整数表示每一个副本。为了描述方便，假设|R|=3f+1，这里f是有可能是要的副本的最大个数。尽管可以存在多于3f+1个副本，但是额外的副本除了降低性能之外不能提高可靠性。<br>存在即合理，每种算法都在特定的时间段中有各自的考虑和意义，无论是技术上还是业务上。共识算法的选择与应用场景高度相关，根据对手方信任度分级，自由选择共识机制，这样才是真的最优。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;20190915-20190930&quot;&gt;&lt;a href=&quot;#20190915-20190930&quot; class=&quot;headerlink&quot; title=&quot;20190915-20190930&quot;&gt;&lt;/a&gt;20190915-20190930&lt;/h1&gt;&lt;h2 id=&quot;吴恩达机器
+      
+    
+    </summary>
+    
+    
+      <category term="半月总结" scheme="http://yoursite.com/tags/%E5%8D%8A%E6%9C%88%E6%80%BB%E7%BB%93/"/>
+    
+  </entry>
   
   <entry>
     <title>2019年9月半月小结(上)</title>
@@ -446,29 +469,6 @@
       
       
         &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;h3 id=&quot;数组分配和访问&quot;&gt;&lt;a href=&quot;#数组分配和访问&quot; class=&quot;headerlink
-      
-    
-    </summary>
-    
-    
-      <category term="深入理解计算机系统" scheme="http://yoursite.com/tags/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>CSAPP过程的实现</title>
-    <link href="http://yoursite.com/2019/05/13/CSAPP%E8%BF%87%E7%A8%8B%E7%9A%84%E5%AE%9E%E7%8E%B0/"/>
-    <id>http://yoursite.com/2019/05/13/CSAPP过程的实现/</id>
-    <published>2019-05-13T09:45:11.000Z</published>
-    <updated>2019-05-22T11:39:48.266Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="计算机系统学习"><a href="#计算机系统学习" class="headerlink" title="计算机系统学习"></a>计算机系统学习</h2><p>今天学习了过程的控制，过程是软件中的一种抽象，可以在程序中的某个地方调用某个过程来实现某种功能。</p><h3 id="栈帧的结构"><a href="#栈帧的结构" class="headerlink" title="栈帧的结构"></a>栈帧的结构</h3><p>栈帧在过程中必不可少，如果我们要想搞清楚过程的实现，就必须先知道栈帧的结构是如何构成的。栈帧其实可以认为是程序栈的一段，而程序栈又是存储器的一段，因此栈帧说到底还是存储器的一段。<br><img src="https://tva1.sinaimg.cn/large/007rAy9hgy1g2zu8mtlm2j30jn0dx3yq.jpg" alt><br>这幅图可以表示栈帧的结构，它由一系列栈帧构成，这些栈帧每一个都对应一个过程，而且每一个帧指针+4的位置都存储着函数的返回地址，每一个帧指针指向的存储器位置当中都备份着调用者的帧指针。</p><h3 id="过程的实现"><a href="#过程的实现" class="headerlink" title="过程的实现"></a>过程的实现</h3><p>总的来说，过程实现当中，参数传递以及局部变量内存的分配和释放都是通过栈帧来实现的，大部分情况下，我们认为过程调用当中做了以下几个操作。<br>1、备份原来的帧指针，调整当前的帧指针到栈指针的位置<br>2、建立起来的栈帧就是为被调用者准备的，当被调用者使用栈帧时，需要给临时变量分配预留内存<br>3、备份被调用者保存的寄存器当中的值，如果有值的话，备份的方式就是压入栈顶。<br>4、使用建立好的栈帧，比如读取和写入，一般使用mov，push以及pop指令等等。<br>5、恢复被调用者寄存器当中的值，这一过程其实是从栈帧中将备份的值再恢复到寄存器，不过此时这些值可能已经不在栈顶了。因此在恢复时，大多数会使用pop指令，但也并非一定如此。<br>6、释放被调用者的栈帧，释放就意味着将栈指针加大，而具体的做法一般是直接将栈指针指向帧指针。<br>7、恢复调用者的栈帧，恢复其实就是调整栈帧两端，使得当前栈帧的区域又回到了原始的位置。<br>8、弹出返回地址，跳出当前过程，继续执行调用者的代码。此时会将栈顶的返回地址弹出到PC，然后程序将按照弹出的返回地址继续执行。这个过程一般使用ret指令完成。<br>过程的实现大概就是以上八个步骤组成的，不过这些步骤并不都是必须的，有的时候，开启编译器的优化会优化掉很多步骤。</p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>过程在平时的程序中扮演着很重要的角色，基本上一些功能稍微复杂一点的程序都需要用到过程。过程可以帮助隐藏掉一些很复杂的实现步骤，甚至有一些过程可以直接提供API接口，只需要连接上接口就可以实现该过程的功能，同时这也在开发过程中帮助开发人员省了不少力气。通过本节的学习，我基本了解在汇编语言中，在调用过程时寄存器和程序内存会发生的变化，同时这也更好的帮助我理解寄存器的内部结构情况。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h2 id=&quot;计算机系统学习&quot;&gt;&lt;a href=&quot;#计算机系统学习&quot; class=&quot;headerlink&quot; title=&quot;计算机系统学习&quot;&gt;&lt;/a&gt;计算机系统学习&lt;/h2&gt;&lt;p&gt;今天学习了过程的控制，过程是软件中的一种抽象，可以在程序中的某个地方调用某个过程来实现某种功能。&lt;/
       
     
     </summary>
